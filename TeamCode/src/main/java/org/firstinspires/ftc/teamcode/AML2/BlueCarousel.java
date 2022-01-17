@@ -27,7 +27,8 @@ public class BlueCarousel extends LinearOpMode {
         DUCK,                   // Drive and intake for duck
         // DEPOT -> LIFT -> OUTTAKE -> RETRACT
         PARK,                   // Drive
-        IDLE                    // Our bot will enter the IDLE state when done
+        IDLE,                    // Our bot will enter the IDLE state when done
+        TEST
     }
 
     Pose2d startPose = new Pose2d(-33, 70, Math.toRadians(270));
