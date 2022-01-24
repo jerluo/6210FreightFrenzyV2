@@ -110,9 +110,9 @@ public class VuforiaBM {
         int p1 = blue(bm.getPixel(407, 450));
         int p2 = blue(bm.getPixel(930, 450));
 
-        //threshold values for capstone color
-        if (p1 < 55) return 1;
-        if (p2 < 55) return 2;
+        //Threshold values for capstone color
+        if (p1 < 65) return 1;
+        if (p2 < 65) return 2;
         else return 3;
 
     }

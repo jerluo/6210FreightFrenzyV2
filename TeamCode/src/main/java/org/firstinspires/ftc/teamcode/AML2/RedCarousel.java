@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 public class RedCarousel extends LinearOpMode {
 
     enum State {
+        ARM,
         DEPOT,                  // Go to depot
         OUTTAKE,                // Outtake cargo
         RETRACT,                // Retract lift
@@ -32,9 +33,9 @@ public class RedCarousel extends LinearOpMode {
     Pose2d startPose = new Pose2d(-33, -70, Math.toRadians(90));
 
     // DEPOT TRAJECTORY
-    public static double depotX = -19;
+    public static double depotX = -14.5;
     public static double depotY = -54;
-    public static double depotAng = 77; // Degrees
+    public static double depotAng = 90; // Degrees
 
     // CAROUSEL TRAJECTORY
     public static double carouselX = -65;
@@ -48,12 +49,12 @@ public class RedCarousel extends LinearOpMode {
 
     // INTAKE TRAJECTORY
     public static double intake2X = -35;
-    public static double intake2Y = -70;
+    public static double intake2Y = -67;
     public static double intake2Ang = 65; // Degrees
 
     // INTAKE TRAJECTORY (BRING TOWARD CAROUSEL)
-    public static double intake3X = -54;
-    public static double intake3Y = -70;
+    public static double intake3X = -55;
+    public static double intake3Y = -67;
     public static double intake3Ang = 45; // Degrees
 
     // WIGGLE ANGLES1 (PICK UP DUCK)
@@ -62,7 +63,7 @@ public class RedCarousel extends LinearOpMode {
     public static double wiggle1Ang = 70; // Degrees
 
     public static double wiggle2X = -46;
-    public static double wiggle2Y = -68;
+    public static double wiggle2Y = -67;
     public static double wiggle2Ang = 90; // Degrees
 
     // PARK TRAJECTORY
@@ -71,8 +72,8 @@ public class RedCarousel extends LinearOpMode {
     public static double parkAng = 180; // Degrees
 
     // Decrease to be closer to the hub
-    public static double offsetMid = 3.6;
-    public static double offsetLow = 3.6;
+    public static double offsetMid = 3;
+    public static double offsetLow = 5;
 
 
     State currentState = State.IDLE;
@@ -86,9 +87,10 @@ public class RedCarousel extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        double waitOuttake = 3;
-        double waitIntake = 5;
-        double waitCarousel = 4;
+        double waitOuttake = 1.5;
+        double waitArm = 1;
+        double waitIntake = 4;
+        double waitCarousel = 2.5;
         ElapsedTime waitTimer = new ElapsedTime();
 
         int cycles = 1;
@@ -139,15 +141,23 @@ public class RedCarousel extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(parkX, parkY, Math.toRadians(parkAng)))
                 .build();
 
-        currentState = State.DEPOT;
+        currentState = State.ARM;
 
-        drive.followTrajectoryAsync(depot);
         manip.automaticLift(pos);
+        waitTimer.reset();
 
         while (opModeIsActive() && !isStopRequested()) {
 
 
             switch (currentState) {
+
+                case ARM:
+                    if (waitTimer.seconds() >= waitArm) {
+                        drive.followTrajectoryAsync(depot);
+                        currentState = State.DEPOT;
+                    }
+
+                    break;
 
                 // Drive to depot while arm is moving up
                 // When arrived, move gates and outtake
@@ -168,7 +178,7 @@ public class RedCarousel extends LinearOpMode {
                     // stop the outtake and retract arm. Decide whether
                     // to continue to cycle going to carousel or park
 
-                    if (waitTimer.seconds() >= waitOuttake - 1) {
+                    if (waitTimer.seconds() >= waitOuttake - 1.25) {
                         manip.gatePos(pos);
                     }
                     if (waitTimer.seconds() >= waitOuttake) {

@@ -172,12 +172,12 @@ public class MainTeleOp extends OpMode
         //Blue Carousel
         if (gamepad1.right_bumper)
         {
-            manip.blueCarousel();
+            manip.teleBlueCarousel();
         }
         //Red Carousel
         else if (gamepad1.left_bumper)
         {
-            manip.redCarousel();
+            manip.teleRedCarousel();
         }
         else
         {

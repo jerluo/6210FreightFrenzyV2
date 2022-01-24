@@ -25,7 +25,7 @@ public class Manipulators {
     // Increase encoder values to move arm lower (further)
     public static int high = 2900;
     public static int mid = 3450;
-    public static int low = 3870;
+    public static int low = 3860;
 
     // Capstone -1967
 
@@ -112,13 +112,23 @@ public class Manipulators {
     }
 
     public void redCarousel(){
-        RC.setPower(-0.8);
-        LC.setPower(-0.8);
+        RC.setPower(-0.55);
+        LC.setPower(-0.55);
     }
 
     public void blueCarousel(){
-        RC.setPower(0.8);
-        LC.setPower(0.8);
+        RC.setPower(0.55);
+        LC.setPower(0.55);
+    }
+
+    public void teleRedCarousel(){
+        RC.setPower(-0.65);
+        LC.setPower(-0.65);
+    }
+
+    public void teleBlueCarousel(){
+        RC.setPower(0.65);
+        LC.setPower(0.65);
     }
 
     public void carouselStop(){

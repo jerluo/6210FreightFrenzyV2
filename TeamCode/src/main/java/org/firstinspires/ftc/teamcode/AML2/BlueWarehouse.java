@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 public class BlueWarehouse extends LinearOpMode {
 
     enum State {
+        ARM,
         DEPOT,                  // Go to depot and lift while (line)
         OUTTAKE,                // Outtake cargo
         WAREHOUSE_IN,           // Drive to warehouse and lower lift while (spline)
@@ -29,9 +30,9 @@ public class BlueWarehouse extends LinearOpMode {
     Pose2d startPose = new Pose2d(10, 70, Math.toRadians(270));
 
     // DEPOT TRAJECTORY
-    public static double depotX = -3;
-    public static double depotY = 50;
-    public static double depotAng = 251.5; // Degrees
+    public static double depotX = -14.5;
+    public static double depotY = 55;
+    public static double depotAng = 270; // Degrees
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
     public static double warehouseInX = 25;
@@ -49,8 +50,9 @@ public class BlueWarehouse extends LinearOpMode {
     public static double depotCycleY = 48;
     public static double depotCycleAng = 270;
 
-    public static double offsetMid = 3.8;
-    public static double offsetLow = 3.8;
+    // Decrease to be closer to the hub
+    public static double offsetMid = 3;
+    public static double offsetLow = 2.5;
 
     int cycles = 2;
 
@@ -65,9 +67,10 @@ public class BlueWarehouse extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
+        double waitArm = 1;
         double waitOuttake = 1;
         double waitIntake = 2;
-        double waitIntakeOut = 0.25;
+        double waitIntakeOut = 1;
         double waitLift = 2;
         ElapsedTime waitTimer = new ElapsedTime();
 
@@ -105,7 +108,11 @@ public class BlueWarehouse extends LinearOpMode {
                 .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
                 .build();
 
-        currentState = State.DEPOT;
+        currentState = State.ARM;
+
+        manip.automaticLift(pos);
+        waitTimer.reset();
+
         drive.followTrajectoryAsync(depot);
 
         manip.automaticLift(pos);
@@ -116,6 +123,14 @@ public class BlueWarehouse extends LinearOpMode {
 
 
             switch (currentState) {
+
+                case ARM:
+                    if (waitTimer.seconds() >= waitArm) {
+                        drive.followTrajectoryAsync(depot);
+                        currentState = State.DEPOT;
+                    }
+
+                    break;
 
                 case DEPOT:
 
@@ -160,7 +175,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitIntake) {
 
-                        //manip.intake(false);
+                        manip.intake(false);
 
                     }
 
@@ -171,9 +186,6 @@ public class BlueWarehouse extends LinearOpMode {
                         if (cycles > 0 ) {
                             currentState = State.WAREHOUSE_OUT;
                             drive.followTrajectorySequenceAsync(warehouseOut);
-
-                            manip.gate(false);
-                            //manip.intakeStop();
 
                             waitTimer.reset();
                             cycles--;
@@ -219,13 +231,13 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitIntakeOut) {
 
-                        //manip.intake(true);
+                        manip.gate(false);
+                        manip.intakeStop();
 
                     }
 
                     if (waitTimer.seconds() >= waitLift) {
 
-                        //manip.intakeStop();
                         manip.automaticLift(3);
 
                     }
