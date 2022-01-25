@@ -7,6 +7,10 @@ apply plugin: 'com.android.library'
 
 android {
 
+    dexOptions{
+        javaMaxHeapSize "2g"
+    }
+
     defaultConfig {
         minSdkVersion 23
         //noinspection ExpiredTargetSdkVersion

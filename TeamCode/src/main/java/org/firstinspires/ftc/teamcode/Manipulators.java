@@ -121,14 +121,26 @@ public class Manipulators {
         LC.setPower(0.55);
     }
 
-    public void teleRedCarousel(){
-        RC.setPower(-0.65);
-        LC.setPower(-0.65);
+    public void teleRedCarousel(boolean fast){
+        if (fast){
+            RC.setPower(-0.9);
+            LC.setPower(-0.9);
+        }
+        else {
+            RC.setPower(-0.65);
+            LC.setPower(-0.65);
+        }
     }
 
-    public void teleBlueCarousel(){
-        RC.setPower(0.65);
-        LC.setPower(0.65);
+    public void teleBlueCarousel(boolean fast){
+        if (fast){
+            RC.setPower(0.9);
+            LC.setPower(0.9);
+        }
+        else {
+            RC.setPower(0.65);
+            LC.setPower(0.65);
+        }
     }
 
     public void carouselStop(){
