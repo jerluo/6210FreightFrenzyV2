@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Manipulators;
 import org.firstinspires.ftc.teamcode.VuforiaBM;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
@@ -21,13 +22,14 @@ public class BlueWarehouse extends LinearOpMode {
         ARM,
         DEPOT,                  // Go to depot and lift while (line)
         OUTTAKE,                // Outtake cargo
+        RETRACT,
         WAREHOUSE_IN,           // Drive to warehouse and lower lift while (spline)
         WAREHOUSE_OUT,          // Drive out of warehouse (spline)
         // GO BACK TO OUTTAKE FOR MY CYCLES
         IDLE                    // Our bot will enter the IDLE state when done
     }
 
-    Pose2d startPose = new Pose2d(10, 70, Math.toRadians(270));
+    Pose2d startPose = new Pose2d(5, 70, Math.toRadians(270));
 
     // DEPOT TRAJECTORY
     public static double depotX = -14.5;
@@ -35,26 +37,26 @@ public class BlueWarehouse extends LinearOpMode {
     public static double depotAng = 270; // Degrees
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
-    public static double warehouseInX = 25;
-    public static double warehouseInY = 71;
+    public static double warehouseInX = 30;
+    public static double warehouseInY = 74;
 
     public static double warehouseOutX = 5;
     public static double warehouseOutY = 68;
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 55;
-    public static double intakeY = 71;
+    public static double intakeX = 46;
+    public static double intakeY = 73;
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = 0;
+    public static double depotCycleX = -5;
     public static double depotCycleY = 48;
-    public static double depotCycleAng = 270;
+    public static double depotCycleAng = 230;
 
     // Decrease to be closer to the hub
     public static double offsetMid = 3;
-    public static double offsetLow = 2.5;
+    public static double offsetLow = 5;
 
-    int cycles = 2;
+    int cycles = 3;
 
     State currentState = State.IDLE;
 
@@ -67,8 +69,8 @@ public class BlueWarehouse extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        double waitArm = 1;
-        double waitOuttake = 1;
+        double waitArm = 0.5;
+        double waitOuttake = 0.01;
         double waitIntake = 2;
         double waitIntakeOut = 1;
         double waitLift = 2;
@@ -98,24 +100,23 @@ public class BlueWarehouse extends LinearOpMode {
                 .setReversed(true)
                 //.splineTo(new Vector2d(warehouseOutX, warehouseOutY), Math.toRadians(0))
                 .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0))
+                .splineTo(new Vector2d(intakeX-6, intakeY), Math.toRadians(0))
+                .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
         // Trajectory to out of warehouse
         TrajectorySequence warehouseOut = drive.trajectorySequenceBuilder(warehouseIn.end())
                 .setReversed(false)
                 .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
-                .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
+                .splineTo(new Vector2d(depotX, depotY), Math.toRadians(depotAng))
                 .build();
 
         currentState = State.ARM;
 
         manip.automaticLift(pos);
         waitTimer.reset();
-
-        drive.followTrajectoryAsync(depot);
-
-        manip.automaticLift(pos);
 
         int cycleX = 3;
 
@@ -128,6 +129,8 @@ public class BlueWarehouse extends LinearOpMode {
                     if (waitTimer.seconds() >= waitArm) {
                         drive.followTrajectoryAsync(depot);
                         currentState = State.DEPOT;
+                        waitTimer.reset();
+
                     }
 
                     break;
@@ -136,13 +139,14 @@ public class BlueWarehouse extends LinearOpMode {
 
                     // Go to depot and start outtaking
 
-                    if (!drive.isBusy()) {
-                        currentState = State.OUTTAKE;
+                    if (waitTimer.seconds() >= 1) {
 
                         manip.gatePos(pos);
 
-                        pos = 3;
+                    }
 
+                    if (!drive.isBusy()) {
+                        currentState = State.OUTTAKE;
                         waitTimer.reset();
                     }
 
@@ -155,12 +159,13 @@ public class BlueWarehouse extends LinearOpMode {
                     // Go into warehouse trajectory
 
                     if (waitTimer.seconds() >= waitOuttake) {
-                        // Trajectory
                         currentState = State.WAREHOUSE_IN;
-                        drive.followTrajectorySequenceAsync(warehouseIn);
 
-                        // Manipulator
+                        pos = 3;
+
                         manip.automaticLift(0);
+
+                        drive.followTrajectorySequenceAsync(warehouseIn);
 
                         waitTimer.reset();
                     }
@@ -172,6 +177,7 @@ public class BlueWarehouse extends LinearOpMode {
                     // Intake <waitIntake> seconds in
                     // Then go to next trajectory and stop intake
                     // Decide whether to continue doing cycles or go to idle
+
 
                     if (waitTimer.seconds() >= waitIntake) {
 
@@ -212,7 +218,7 @@ public class BlueWarehouse extends LinearOpMode {
                         else {
                             currentState = State.IDLE;
 
-                            //manip.intakeStop();
+                            manip.intakeStop();
                             manip.gate(false);
                         }
 
@@ -242,10 +248,14 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (!drive.isBusy()) {
-                        currentState = State.OUTTAKE;
+                    if (waitTimer.seconds() >= waitLift+1) {
 
                         manip.gate(true);
+
+                    }
+
+                    if (!drive.isBusy()) {
+                        currentState = State.OUTTAKE;
 
                         waitTimer.reset();
                     }

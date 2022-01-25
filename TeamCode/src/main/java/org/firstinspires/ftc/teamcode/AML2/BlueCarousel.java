@@ -176,6 +176,7 @@ public class BlueCarousel extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitOuttake - 1.25) {
                         manip.gatePos(pos);
+                        pos = 3;
                     }
 
                     if (waitTimer.seconds() >= waitOuttake) {
