@@ -230,6 +230,8 @@ public class MainTeleOp extends OpMode
 
         //telemetry.addData("R encoder", RL.getCurrentPosition());
 
+        telemetry.addData("block status: ", manip.senseColor());
+        telemetry.addData("block status: ", manip.colorValue());
         telemetry.addData("right stick y", gamepad2.right_stick_y);
         telemetry.addData("field", field);
         telemetry.addData("encoder", manip.RL.getCurrentPosition());

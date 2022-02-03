@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -23,7 +24,7 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2900;
+    public static int high = 2700;
     public static int mid = 3450;
     public static int low = 3860;
 
@@ -38,6 +39,8 @@ public class Manipulators {
     private DcMotor LC;
 
     private Servo gate;
+
+    ColorSensor color;
 
     public Manipulators(HardwareMap robot) {
         this.robot = robot;
@@ -56,6 +59,9 @@ public class Manipulators {
 
         RL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         RL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        //color sensor
+        color = robot.get(ColorSensor.class, "Color");
     }
 
     public void checkPosition() {
@@ -77,7 +83,7 @@ public class Manipulators {
         int height = 0;
 
 
-        if (pos == 0) height = 75;
+        if (pos == 0) height = 30;
 
         if (pos == 1) height = low;
         if (pos == 2) height = mid;
@@ -123,8 +129,8 @@ public class Manipulators {
 
     public void teleRedCarousel(boolean fast){
         if (fast){
-            RC.setPower(-0.9);
-            LC.setPower(-0.9);
+            RC.setPower(-1);
+            LC.setPower(-1);
         }
         else {
             RC.setPower(-0.65);
@@ -134,8 +140,8 @@ public class Manipulators {
 
     public void teleBlueCarousel(boolean fast){
         if (fast){
-            RC.setPower(0.9);
-            LC.setPower(0.9);
+            RC.setPower(1);
+            LC.setPower(1);
         }
         else {
             RC.setPower(0.65);
@@ -164,12 +170,25 @@ public class Manipulators {
     }
 
     public void intake(boolean out) {
-        if (out) IT.setPower(-0.8);
-        else IT.setPower(0.8);
+        if (out) IT.setPower(0.8);
+        else IT.setPower(-0.8);
     }
 
     public void intakeStop() {
         IT.setPower(0);
+    }
+
+    public boolean senseColor(){
+
+        if (color.red() > 250) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public int colorValue() {
+        return (color.red());
     }
 
 }

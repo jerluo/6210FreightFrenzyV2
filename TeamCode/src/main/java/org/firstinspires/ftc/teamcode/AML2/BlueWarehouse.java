@@ -44,8 +44,9 @@ public class BlueWarehouse extends LinearOpMode {
     public static double warehouseOutY = 68;
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 46;
+    public static double intakeX = 45;
     public static double intakeY = 74;
+    public static double intakeAngle = 0;
 
     // DEPOT CYCLE TRAJECTORY
     public static double depotCycleX = -5;
@@ -71,7 +72,7 @@ public class BlueWarehouse extends LinearOpMode {
 
         double waitArm = 0.5;
         double waitOuttake = 0.01;
-        double waitIntake = 2;
+        double waitIntake = 1;
         double waitIntakeOut = 1;
         double waitLift = 1.5;
         ElapsedTime waitTimer = new ElapsedTime();
@@ -169,8 +170,6 @@ public class BlueWarehouse extends LinearOpMode {
 
                         drive.followTrajectorySequenceAsync(warehouseIn);
 
-                        warehouseIn = warehouseInCycle;
-
                         waitTimer.reset();
                     }
 
@@ -190,7 +189,7 @@ public class BlueWarehouse extends LinearOpMode {
                     }
 
 
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy() ) {
 
                         // Continue
                         if (cycles > 0 ) {
@@ -200,22 +199,21 @@ public class BlueWarehouse extends LinearOpMode {
                             waitTimer.reset();
                             cycles--;
 
-                            cycleX += 3;
+                            cycleX += 1.5;
 
-                            /*
-                            warehouseIn = drive.trajectorySequenceBuilder(depot.end())
+                            manip.intake(true);
+
+                            warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    .splineTo(new Vector2d(warehouseOutX, warehouseOutY), Math.toRadians(warehouseOutAng))
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(warehouseInAng))
-                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY), Math.toRadians(intakeAng))
+                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY), Math.toRadians(0))
                                     .build();
 
                             warehouseOut = drive.trajectorySequenceBuilder(warehouseIn.end())
                                     .setReversed(false)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(warehouseInAng))
-                                    .splineTo(new Vector2d(warehouseOutX, warehouseOutY), Math.toRadians(warehouseOutAng))
-                                    .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(intakeAng))
-                                    .build();*/
+                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
+                                    .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
+                                    .build();
                         }
 
                         // Stop

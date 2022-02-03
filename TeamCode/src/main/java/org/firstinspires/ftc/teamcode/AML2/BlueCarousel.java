@@ -51,12 +51,12 @@ public class BlueCarousel extends LinearOpMode {
 
     // INTAKE TRAJECTORY (POINT TO WALL)
     public static double intake2X = -35;
-    public static double intake2Y = 67;
+    public static double intake2Y = 68;
     public static double intake2Ang = 315; // Degrees
 
     // INTAKE TRAJECTORY (BRING TOWARD CAROUSEL)
     public static double intake3X = -54;
-    public static double intake3Y = 67;
+    public static double intake3Y = 68;
     public static double intake3Ang = 315; // Degrees
 
     // WIGGLE ANGLES1 (PICK UP DUCK)
@@ -65,7 +65,7 @@ public class BlueCarousel extends LinearOpMode {
     public static double wiggle1Ang = 290; // Degrees
 
     public static double wiggle2X = -46;
-    public static double wiggle2Y = 67;
+    public static double wiggle2Y = 69;
     public static double wiggle2Ang = 270; // Degrees
 
     // PARK TRAJECTORY
