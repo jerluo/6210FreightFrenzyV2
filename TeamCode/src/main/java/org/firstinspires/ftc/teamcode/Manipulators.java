@@ -27,7 +27,7 @@ public class Manipulators {
     // Increase encoder values to move arm lower (further)
     public static int high = 2700;
     public static int mid = 3310;
-    public static int low = 3810;
+    public static int low = 3710;
 
     // Capstone -1967
 

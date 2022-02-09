@@ -211,7 +211,7 @@ public class BlueWarehouse extends LinearOpMode {
                             waitTimer.reset();
                             cycles--;
 
-                            cycleX += 1.5;
+                            cycleX += 2;
 
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
@@ -252,15 +252,15 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitIntakeOut) {
 
-                        manip.intakeStop();
+                        manip.intake(true);
 
                     }
 
                     if (waitTimer.seconds() >= waitLift) {
 
+                        manip.intakeStop();
                         manip.gate(false);
                         manip.automaticLift(3);
-                        manip.intakeStop();
 
                     }
 

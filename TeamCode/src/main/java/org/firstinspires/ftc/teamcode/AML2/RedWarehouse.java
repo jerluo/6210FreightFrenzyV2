@@ -78,7 +78,7 @@ public class RedWarehouse extends LinearOpMode {
         double waitArm = 0.5;
         double waitOuttake = 0.01;
         double waitIntake = 1;
-        double waitIntakeOut = 1;
+        double waitIntakeOut = 0.5;
         double waitLift = 1.5;
         ElapsedTime waitTimer = new ElapsedTime();
 
@@ -255,7 +255,6 @@ public class RedWarehouse extends LinearOpMode {
                     if (waitTimer.seconds() >= waitIntakeOut) {
 
                         manip.intake(true);
-
 
                     }
 
