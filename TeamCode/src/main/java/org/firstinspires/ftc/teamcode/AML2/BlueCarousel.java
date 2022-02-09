@@ -36,7 +36,7 @@ public class BlueCarousel extends LinearOpMode {
 
     // DEPOT TRAJECTORY
     public static double depotX = -14.5;
-    public static double depotY = 55;
+    public static double depotY = 55; //before change this was 50
     public static double depotAng = 270; // Degrees
 
     // CAROUSEL TRAJECTORY

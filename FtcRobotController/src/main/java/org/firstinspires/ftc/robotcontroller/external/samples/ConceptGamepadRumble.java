@@ -185,7 +185,7 @@ public class ConceptGamepadRumble extends LinearOpMode
             // ----------------------------------------------------------------------------------------
             if (gamepad1.right_trigger > TRIGGER_THRESHOLD) {
                 if (!highLevel) {
-                    gamepad1.rumble(0.9, 0, 200);  // 200 mSec burst on left motor.
+                        gamepad1.rumble(0.9, 0, 200);  // 200 mSec burst on left motor.
                     highLevel = true;  // Hold off any more triggers
                 }
             } else {

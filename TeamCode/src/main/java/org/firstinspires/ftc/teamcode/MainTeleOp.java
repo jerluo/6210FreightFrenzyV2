@@ -228,6 +228,15 @@ public class MainTeleOp extends OpMode
         // Switch back to manual lift
         if (Math.abs(gamepad2.right_stick_y) > 0.1) manual = true;
 
+        if(manip.senseColor()){
+            gamepad1.rumble(0.9, 0, 1000);
+            gamepad2.rumble(0.9, 0, 1000);
+        }
+        else{
+            gamepad1.stopRumble();
+            gamepad2.stopRumble();
+        }
+
         //telemetry.addData("R encoder", RL.getCurrentPosition());
 
         telemetry.addData("block status: ", manip.senseColor());
