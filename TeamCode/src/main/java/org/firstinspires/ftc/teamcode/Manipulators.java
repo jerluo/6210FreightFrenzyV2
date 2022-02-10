@@ -25,8 +25,8 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2800;
-    public static int mid = 3310;
+    public static int high = 2700;
+    public static int mid = 3260;
     public static int low = 3747;
 
     // Capstone -1967
@@ -84,7 +84,7 @@ public class Manipulators {
         int height = 0;
 
 
-        if (pos == 0) height = 30;
+        if (pos == 0) height = 15;
 
         if (pos == 1) height = low;
         if (pos == 2) height = mid;
@@ -181,7 +181,7 @@ public class Manipulators {
 
     public boolean senseColor(){
 
-        if (color.red() > 250) {
+        if (color.red() > 350 || color.green()  > 650) {
             return true;
         }
 

@@ -37,7 +37,7 @@ public class RedWarehouse extends LinearOpMode {
     public static double depotAng = 90; // Degrees
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
-    public static double warehouseInX = 23;
+    public static double warehouseInX = 24;
     public static double warehouseInY = -74;
 
     public static double warehouseOutX = 5;
@@ -51,7 +51,7 @@ public class RedWarehouse extends LinearOpMode {
     // INTAKE TRAJECTORY
     public static double intakeCycleX = 47;
     public static double intakeCycleY = -67;
-    public static double intakeCycleAngle = 15;
+    public static double intakeCycleAngle = 25;
 
     // DEPOT CYCLE TRAJECTORY
     public static double depotCycleX = -5;
@@ -59,7 +59,7 @@ public class RedWarehouse extends LinearOpMode {
     public static double depotCycleAng = 115;
 
     // Decrease to be closer to the hub
-    public static double offsetMid = 3;
+    public static double offsetMid = 2.5;
     public static double offsetLow = 4;
 
     int cycles = 3;
@@ -76,7 +76,7 @@ public class RedWarehouse extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         double waitArm = 0.5;
-        double waitOuttake = 0.01;
+        double waitOuttake = 0.2;
         double waitIntake = 1;
         double waitIntakeOut = 0.5;
         double waitLift = 1.5;
@@ -106,7 +106,7 @@ public class RedWarehouse extends LinearOpMode {
                 .setReversed(true)
                 .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
                 .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(18, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
@@ -128,7 +128,7 @@ public class RedWarehouse extends LinearOpMode {
         manip.automaticLift(pos);
         waitTimer.reset();
 
-        double cycleX = 1;
+        double cycleX = 2;
         double cycleY = 1;
 
         while (opModeIsActive() && !isStopRequested()) {
@@ -201,27 +201,50 @@ public class RedWarehouse extends LinearOpMode {
 
                     }
 
+                    if (manip.senseColor()) manip.intakeStop();
 
-                    if (!drive.isBusy() ) {
+                    if (!drive.isBusy()) {
 
                         // Continue
-                        if (cycles > 0 ) {
+                        if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
                             drive.followTrajectorySequenceAsync(warehouseOut);
 
                             waitTimer.reset();
                             cycles--;
 
-                            cycleX += 1.5;
-                            cycleY += 1;
+                            cycleX += 1.25;
 
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
                                     .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
                                     .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(intakeCycleAngle),
-                                            SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                            SampleMecanumDrive.getVelocityConstraint(19, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                                    .build();
+
+                            warehouseOut = drive.trajectorySequenceBuilder(warehouseIn.end())
+                                    .setReversed(false)
+                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
+                                    .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
+                                    .build();
+                        }
+
+                        else if (cycles > 0) {
+                            currentState = State.WAREHOUSE_OUT;
+                            drive.followTrajectorySequenceAsync(warehouseOut);
+
+                            waitTimer.reset();
+                            cycles--;
+
+                            cycleX += 1.25;
+
+
+                            warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
+                                    .setReversed(true)
+                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineTo(new Vector2d(intakeCycleX, intakeCycleY), Math.toRadians(intakeCycleAngle))
                                     .build();
 
                             warehouseOut = drive.trajectorySequenceBuilder(warehouseIn.end())
@@ -260,13 +283,13 @@ public class RedWarehouse extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitLift) {
 
+                        manip.intakeStop();
                         manip.gate(false);
                         manip.automaticLift(3);
-                        manip.intakeStop();
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift+1) {
+                    if (waitTimer.seconds() >= waitLift+1.25) {
 
                         manip.gate(true);
 
@@ -298,6 +321,7 @@ public class RedWarehouse extends LinearOpMode {
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.addData("state", currentState);
+            telemetry.addData("color", manip.colorValue());
             telemetry.update();
         }
 

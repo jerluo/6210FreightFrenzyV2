@@ -137,8 +137,7 @@ public class MainTeleOp extends OpMode
         {
 
             manip.automaticLift(0);
-            waitTimer.reset();
-            retract = true;
+
         }
 
         if (retract) {
@@ -211,13 +210,13 @@ public class MainTeleOp extends OpMode
         //Intake
         if (Math.abs(gamepad2.left_trigger) > 0.1)
         {
-            IT.setPower(gamepad2.left_trigger);
+            IT.setPower(gamepad2.left_trigger*0.8);
         }
 
         //Stop Intake
         else if (Math.abs(gamepad2.right_trigger) > 0.1)
         {
-            IT.setPower(-gamepad2.right_trigger);
+            IT.setPower(-gamepad2.right_trigger*0.8);
         }
 
         else
