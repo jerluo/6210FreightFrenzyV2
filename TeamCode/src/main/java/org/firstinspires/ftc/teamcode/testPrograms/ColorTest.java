@@ -17,6 +17,7 @@ public class ColorTest extends LinearOpMode {
     public void runOpMode() {
         // Get the color sensor from hardwareMap
         color = hardwareMap.get(ColorSensor.class, "Color");
+        Manipulators manip = new Manipulators(hardwareMap);
 
         // Wait for the Play button to be pressed
         waitForStart();
@@ -26,6 +27,7 @@ public class ColorTest extends LinearOpMode {
             telemetry.addData("Red", color.red());
             telemetry.addData("Green", color.green());
             telemetry.addData("Blue", color.blue());
+            telemetry.addData("Red", manip.getVoltage());
             telemetry.update();
         }
 

@@ -6,9 +6,11 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -33,7 +35,7 @@ public class Manipulators {
 
 
     //Intake motor
-    private DcMotor IT;
+    private DcMotorEx IT;
 
     //Intake servos
     private DcMotor RC;
@@ -46,7 +48,7 @@ public class Manipulators {
     public Manipulators(HardwareMap robot) {
         this.robot = robot;
 
-        IT = robot.get(DcMotor.class, "intake");
+        IT = robot.get(DcMotorEx.class, "intake");
 
         RC = robot.get(DcMotor.class, "rightCarousel");
         LC = robot.get(DcMotor.class, "leftCarousel");
@@ -173,7 +175,22 @@ public class Manipulators {
     public void intake(boolean out) {
         if (out) IT.setPower(0.8);
         else IT.setPower(-0.8);
+        IT.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+    public double getVoltage()
+    {
+        double result = Double.POSITIVE_INFINITY;
+        for (VoltageSensor sensor : robot.voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) {
+                result = Math.min(result, voltage);
+            }
+        }
+        return result;
+    }
+
+    public double intakeVelocity() { return IT.getVelocity();}
 
     public void intakeStop() {
         IT.setPower(0);
