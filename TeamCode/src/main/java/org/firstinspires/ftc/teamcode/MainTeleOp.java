@@ -210,15 +210,15 @@ public class MainTeleOp extends OpMode
         */
 
         //Intake
-        if (Math.abs(gamepad2.left_trigger) > 0.1)
+        if (Math.abs(gamepad2.right_trigger) > 0.1)
         {
-            IT.setPower(gamepad2.left_trigger*0.8);
+            IT.setPower(gamepad2.right_trigger*0.8);
         }
 
         //Stop Intake
-        else if (Math.abs(gamepad2.right_trigger) > 0.1)
+        else if (Math.abs(gamepad2.left_trigger) > 0.1)
         {
-            IT.setPower(-gamepad2.right_trigger*0.8);
+            IT.setPower(-gamepad2.left_trigger*0.8);
         }
 
         else
