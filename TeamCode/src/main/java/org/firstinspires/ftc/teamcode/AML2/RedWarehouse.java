@@ -57,7 +57,7 @@ public class RedWarehouse extends LinearOpMode {
     // DEPOT CYCLE TRAJECTORY
     public static double depotCycleX = -5;
     public static double depotCycleY = -54;
-    public static double depotCycleAng = 120;
+    public static double depotCycleAng = 115;
 
     // Decrease to be closer to the hub
     public static double offsetMid = 2.5;
@@ -80,7 +80,7 @@ public class RedWarehouse extends LinearOpMode {
 
         double waitArm = 0.5;
         double waitOuttake = 0.2;
-        double waitIntake = 1;
+        double waitIntake = 2;
         double waitIntakeOut = 0.5;
         double waitLift = 1.5;
         ElapsedTime waitTimer = new ElapsedTime();
@@ -204,14 +204,15 @@ public class RedWarehouse extends LinearOpMode {
                     if (waitTimer.seconds() >= waitIntake) {
 
                         manip.intake(false);
+                        // Check if freight inside the bucket -> stops intake
+                        if (manip.senseColor()){
+                            manip.intakeStop();
+                            drive.followTrajectorySequence(null);
+                        }
 
                     }
 
-                    // Check if freight inside the bucket -> stops intake
-                    if (manip.senseColor()){
-                        manip.intakeStop();
-                        drive.followTrajectorySequence(null);
-                    }
+
 
 
                     // If voltage spike, outtake fast and then continue intaking
@@ -322,7 +323,7 @@ public class RedWarehouse extends LinearOpMode {
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift+1.25) {
+                    if (waitTimer.seconds() >= waitLift+1.1) {
 
                         manip.gate(true);
 

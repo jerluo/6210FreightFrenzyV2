@@ -86,7 +86,7 @@ public class Manipulators {
         int height = 0;
 
 
-        if (pos == 0) height = 15;
+        if (pos == 0) height = 0;
 
         if (pos == 1) height = low;
         if (pos == 2) height = mid;
@@ -173,9 +173,8 @@ public class Manipulators {
     }
 
     public void intake(boolean out) {
-        if (out) IT.setPower(0.8);
-        else IT.setPower(-0.8);
-        IT.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (out) IT.setPower(-1);
+        else IT.setPower(1);
     }
 
     public double getVoltage()
@@ -198,7 +197,7 @@ public class Manipulators {
 
     public boolean senseColor(){
 
-        if (color.red() > 350 || color.green()  > 650) {
+        if (color.red() > 300 || color.green()  > 400) {
             return true;
         }
 
