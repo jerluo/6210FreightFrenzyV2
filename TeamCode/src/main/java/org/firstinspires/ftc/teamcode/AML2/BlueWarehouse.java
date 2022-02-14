@@ -43,12 +43,12 @@ public class BlueWarehouse extends LinearOpMode {
 
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 47;
+    public static double intakeX = 46;
     public static double intakeY = 74;
     public static double intakeAngle = 0;
 
     // INTAKE TRAJECTORY
-    public static double intakeCycleX = 49;
+    public static double intakeCycleX = 46;
     public static double intakeCycleY = 68; // 67
     public static double intakeCycleAngle = 345; // 345
 
@@ -59,7 +59,7 @@ public class BlueWarehouse extends LinearOpMode {
 
     // Decrease to be closer to the hub
     public static double offsetMid = 3;
-    public static double offsetLow = 4.5;
+    public static double offsetLow = 4;
 
     int cycles = 3;
 
@@ -78,7 +78,7 @@ public class BlueWarehouse extends LinearOpMode {
 
         double waitArm = 0.5;
         double waitOuttake = 0.2;
-        double waitIntake = 1;
+        double waitIntake = 2;
         double waitIntakeOut = 0.5;
         double waitLift = 1.5;
         ElapsedTime waitTimer = new ElapsedTime();
@@ -241,7 +241,7 @@ public class BlueWarehouse extends LinearOpMode {
                         // Continue
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 2;
+                            cycleX += 1;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)

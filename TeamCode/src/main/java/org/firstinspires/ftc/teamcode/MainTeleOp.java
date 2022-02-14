@@ -212,13 +212,13 @@ public class MainTeleOp extends OpMode
         //Intake
         if (Math.abs(gamepad2.left_trigger) > 0.1)
         {
-            IT.setPower(gamepad2.left_trigger*0.8);
+            IT.setPower(-gamepad2.left_trigger*0.8);
         }
 
         //Stop Intake
         else if (Math.abs(gamepad2.right_trigger) > 0.1)
         {
-            IT.setPower(-gamepad2.right_trigger*0.8);
+            IT.setPower(gamepad2.right_trigger*0.8);
         }
 
         else
@@ -232,10 +232,14 @@ public class MainTeleOp extends OpMode
 
         if(manip.senseColor()){
             gamepad2.rumble(0.6, 0, 1000);
+            gamepad1.rumble(0.6, 0, 1000);
         }
         else{
             gamepad2.stopRumble();
+            gamepad1.stopRumble();
         }
+
+
 
 
 

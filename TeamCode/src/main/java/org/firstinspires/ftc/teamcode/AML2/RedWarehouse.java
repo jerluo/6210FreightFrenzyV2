@@ -39,18 +39,18 @@ public class RedWarehouse extends LinearOpMode {
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
     public static double warehouseInX = 24;
-    public static double warehouseInY = -74;
+    public static double warehouseInY = -75;
 
     public static double warehouseOutX = 5;
     public static double warehouseOutY = -68;
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 47;
+    public static double intakeX = 46;
     public static double intakeY = -74;
     public static double intakeAngle = 0;
 
     // INTAKE TRAJECTORY
-    public static double intakeCycleX = 47;
+    public static double intakeCycleX = 46;
     public static double intakeCycleY = -68;
     public static double intakeCycleAngle = 25;
 
@@ -243,7 +243,7 @@ public class RedWarehouse extends LinearOpMode {
                         // Continue
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 2;
+                            cycleX += 1 ;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
