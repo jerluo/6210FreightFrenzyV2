@@ -26,6 +26,7 @@ public class MainTeleOp extends OpMode
     boolean rumbleState = false;
     boolean rumble = false;
     double zeroAng = 0;
+    double voltage = 100;
 
     public HashMap<String, Boolean> buttons = new HashMap<String, Boolean>();
     double[] motorPower = {0, 0, 0, 0};
@@ -210,20 +211,29 @@ public class MainTeleOp extends OpMode
         */
 
         //Intake
-        if (Math.abs(gamepad2.left_trigger) > 0.1)
-        {
-            IT.setPower(-gamepad2.left_trigger*0.8);
-        }
 
-        //Stop Intake
-        else if (Math.abs(gamepad2.right_trigger) > 0.1)
-        {
-            IT.setPower(gamepad2.right_trigger*0.8);
-        }
 
-        else
-        {
-            IT.setPower(0);
+        if ((manip.getVoltage() < voltage - 2) || (manip.senseColor() && manip.gatePosition() == 1)){
+
+            manip.intake(true);
+        }
+        else {
+            if (Math.abs(gamepad2.left_trigger) > 0.1)
+            {
+                IT.setPower(-gamepad2.left_trigger*0.8);
+            }
+
+            //Stop Intake
+            else if (Math.abs(gamepad2.right_trigger) > 0.1)
+            {
+                IT.setPower(gamepad2.right_trigger*0.8);
+            }
+
+            else
+            {
+                IT.setPower(0);
+            }
+
         }
 
         // Switch back to manual lift
@@ -238,6 +248,16 @@ public class MainTeleOp extends OpMode
         else{
             gamepad2.stopRumble();
             gamepad1.stopRumble();
+        }
+
+        if (manip.getVoltage() < voltage - 2) {
+
+            manip.intake(true);
+        }
+
+        if (manip.senseColor() == true) {
+
+            manip.intake(true);
         }
 
 
