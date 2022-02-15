@@ -230,6 +230,7 @@ public class MainTeleOp extends OpMode
         if (Math.abs(gamepad2.right_stick_y) > 0.1) manual = true;
 
 
+
         if(manip.senseColor()){
             gamepad2.rumble(0.6, 0, 1000);
             gamepad1.rumble(0.6, 0, 1000);
