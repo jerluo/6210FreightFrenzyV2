@@ -27,9 +27,10 @@ public class MainTeleOp extends OpMode
     boolean rumble = false;
     double zeroAng = 0;
     double voltage = 100;
-
     public HashMap<String, Boolean> buttons = new HashMap<String, Boolean>();
     double[] motorPower = {0, 0, 0, 0};
+    double duckSpeed = 0.6;
+
 
     public void init()
     {
@@ -171,7 +172,7 @@ public class MainTeleOp extends OpMode
             duckDirection *= -1;
         }
 */
-        //Blue Carousel
+  /*      //Blue Carousel
         if (gamepad1.right_bumper)
         {
             manip.teleBlueCarousel(false);
@@ -192,6 +193,20 @@ public class MainTeleOp extends OpMode
         else
         {
             manip.carouselStop();
+        }
+  */
+        //sped duck macro
+        if (gamepad1.right_bumper) {
+            manip.initialCarousel(duckSpeed);
+            duckSpeed += 0.0175;
+        }
+        else if (gamepad1.left_bumper) {
+            manip.initialCarousel(-duckSpeed);
+            duckSpeed -= 0.0175;
+        }
+        else {
+            duckSpeed = 0.6;
+            manip.initialCarousel(0);
         }
 
 
@@ -272,6 +287,7 @@ public class MainTeleOp extends OpMode
         telemetry.addData("right stick y", gamepad2.right_stick_y);
         telemetry.addData("field", field);
         telemetry.addData("encoder", manip.RL.getCurrentPosition());
+        telemetry.addData("duckspeed", duckSpeed);
         telemetry.update();
 
     }

@@ -130,6 +130,13 @@ public class Manipulators {
         LC.setPower(0.55);
     }
 
+    public void initialCarousel(double speed){
+        RC.setPower(speed);
+        LC.setPower(speed);
+    }
+
+
+
     public void teleRedCarousel(boolean fast){
         if (fast){
             RC.setPower(-1);
