@@ -43,17 +43,17 @@ public class BlueWarehouse extends LinearOpMode {
 
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 43;
+    public static double intakeX = 45;
     public static double intakeY = 74;
     public static double intakeAngle = 0;
 
     // INTAKE TRAJECTORY
-    public static double intakeCycleX = 43;
+    public static double intakeCycleX = 45;
     public static double intakeCycleY = 68; // 67
     public static double intakeCycleAngle = 345; // 345
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -5;
+    public static double depotCycleX = -8;
     public static double depotCycleY = 54;
     public static double depotCycleAng = 250;
 
@@ -79,8 +79,8 @@ public class BlueWarehouse extends LinearOpMode {
         double waitArm = 0.5;
         double waitOuttake = 0.01;
         double waitIntake = 2;
-        double waitIntakeOut = 0.25;
-        double waitLift = 0.5;
+        double waitIntakeOut = 0.01;
+        double waitLift = 0.75;
         ElapsedTime waitTimer = new ElapsedTime();
 
         manip.gate(false);
@@ -105,7 +105,8 @@ public class BlueWarehouse extends LinearOpMode {
         // Trajectory to warehouse
         TrajectorySequence warehouseIn = drive.trajectorySequenceBuilder(depot.end())
                 .setReversed(true)
-                .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
                 .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0))
                 .build();
 
@@ -239,7 +240,7 @@ public class BlueWarehouse extends LinearOpMode {
                         // Continue
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 1;
+                            cycleX += 3;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -249,7 +250,9 @@ public class BlueWarehouse extends LinearOpMode {
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                                    //.lineToSplineHeading(new Pose2d(intakeCycleX + cycleX, warehouseInY, Math.toRadians(165)))
                                     .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(intakeCycleAngle))
                                     .build();
 
@@ -271,7 +274,8 @@ public class BlueWarehouse extends LinearOpMode {
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
                                     .splineTo(new Vector2d(intakeCycleX + cycleX - 1, intakeCycleY ), Math.toRadians(0))
                                     .build();
 
@@ -314,22 +318,23 @@ public class BlueWarehouse extends LinearOpMode {
 
                         manip.gate(false);
                         manip.automaticLift(3);
+                        manip.intakeStop();
 
                     }
 
                     if (waitTimer.seconds() >= waitLift+0.6) {
 
-                        manip.intakeStop();
+
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift+1) {
+                    if (waitTimer.seconds() >= waitLift+1.15) {
 
                         manip.gate(true);
 
                     }
 
-                    if (!drive.isBusy() || poseEstimate.getY() < 54) {
+                    if (!drive.isBusy() || poseEstimate.getY() < 56) {
                         currentState = State.OUTTAKE;
 
                         waitTimer.reset();

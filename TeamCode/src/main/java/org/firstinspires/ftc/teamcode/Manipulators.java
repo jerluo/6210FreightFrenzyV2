@@ -27,7 +27,7 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2775;
+    public static int high = 2875;
     public static int mid = 3260;
     public static int low = 3747;
 
