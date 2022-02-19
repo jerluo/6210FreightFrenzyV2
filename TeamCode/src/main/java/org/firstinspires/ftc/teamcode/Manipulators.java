@@ -27,7 +27,7 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2875;
+    public static int high = 2725;
     public static int mid = 3260;
     public static int low = 3747;
 
@@ -131,6 +131,11 @@ public class Manipulators {
     }
 
     public void initialCarousel(double speed){
+        RC.setPower(speed);
+        LC.setPower(speed);
+    }
+
+    public void Slower(double speed){
         RC.setPower(speed);
         LC.setPower(speed);
     }

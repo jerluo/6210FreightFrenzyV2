@@ -30,7 +30,7 @@ public class MainTeleOp extends OpMode
     public HashMap<String, Boolean> buttons = new HashMap<String, Boolean>();
     double[] motorPower = {0, 0, 0, 0};
     double duckSpeed = 0.6;
-
+    //int loopnum = 0;
 
     public void init()
     {
@@ -72,8 +72,15 @@ public class MainTeleOp extends OpMode
         double leftX = 0;
         double rightX = 0;
 
-        if (isPressed("1y", gamepad1.y)) {
+        if (isPressed("y1",gamepad1.y)) {
             robot.setHalfspeed();
+        }
+
+        if (gamepad1.right_trigger > .25) {
+            robot.pushHalfspeed(true);
+        }
+        else {
+            robot.pushHalfspeed(false);
         }
 
         if (isPressed("1a", gamepad1.a)) {
@@ -198,16 +205,32 @@ public class MainTeleOp extends OpMode
         //sped duck macro
         if (gamepad1.right_bumper) {
             manip.initialCarousel(duckSpeed);
-            duckSpeed += 0.0175;
+            duckSpeed *= 1.035;
         }
         else if (gamepad1.left_bumper) {
             manip.initialCarousel(-duckSpeed);
-            duckSpeed -= 0.0175;
+            duckSpeed *= 1.035;
         }
         else {
             duckSpeed = 0.6;
             manip.initialCarousel(0);
         }
+
+        /*if (gamepad1.right_bumper) {
+            manip.initialCarousel(duckSpeed);
+            for (loopnum = 0; loopnum <= 75000000; loopnum++) {
+                if (loopnum == 75000000) {
+                    duckSpeed += 0.3;
+                }
+                else {
+                    duckSpeed = 0.6;
+                }
+            }
+        }
+        else {
+            duckSpeed = 0.6;
+            manip.initialCarousel(0);
+        }*/
 
 
 
@@ -228,7 +251,7 @@ public class MainTeleOp extends OpMode
         //Intake
 
 
-        if ((manip.getVoltage() < voltage - 2) || (manip.senseColor() && manip.gatePosition() == 1)){
+       /* if ((manip.getVoltage() < voltage - 2) || (manip.senseColor() && manip.gatePosition() == 1)){
 
             manip.intake(true);
         }
@@ -249,6 +272,21 @@ public class MainTeleOp extends OpMode
                 IT.setPower(0);
             }
 
+        }*/
+        if (Math.abs(gamepad2.left_trigger) > 0.1)
+        {
+            IT.setPower(-gamepad2.left_trigger*0.8);
+        }
+
+        //Stop Intake
+        else if (Math.abs(gamepad2.right_trigger) > 0.1)
+        {
+            IT.setPower(gamepad2.right_trigger*0.8);
+        }
+
+        else
+        {
+            IT.setPower(0);
         }
 
         // Switch back to manual lift
@@ -265,15 +303,15 @@ public class MainTeleOp extends OpMode
             gamepad1.stopRumble();
         }
 
-        if (manip.getVoltage() < voltage - 2) {
+        /*if (manip.getVoltage() < voltage - 2) {
 
             manip.intake(true);
-        }
+        }*/
 
-        if (manip.senseColor() == true) {
+        /*if (manip.senseColor() == true) {
 
             manip.intake(true);
-        }
+        }*/
 
 
 
@@ -288,6 +326,7 @@ public class MainTeleOp extends OpMode
         telemetry.addData("field", field);
         telemetry.addData("encoder", manip.RL.getCurrentPosition());
         telemetry.addData("duckspeed", duckSpeed);
+        //telemetry.addData("loopy", loopnum);
         telemetry.update();
 
     }
