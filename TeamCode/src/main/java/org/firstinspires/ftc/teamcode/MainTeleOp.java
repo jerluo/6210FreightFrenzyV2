@@ -251,43 +251,35 @@ public class MainTeleOp extends OpMode
         //Intake
 
 
-       /* if ((manip.getVoltage() < voltage - 2) || (manip.senseColor() && manip.gatePosition() == 1)){
-
-            manip.intake(true);
+        if (isPressed("voltage check", Math.abs(gamepad2.right_trigger) > 0.1)) {
+            voltage = manip.getVoltage();
         }
-        else {
-            if (Math.abs(gamepad2.left_trigger) > 0.1)
-            {
-                IT.setPower(-gamepad2.left_trigger*0.8);
-            }
 
-            //Stop Intake
-            else if (Math.abs(gamepad2.right_trigger) > 0.1)
-            {
-                IT.setPower(gamepad2.right_trigger*0.8);
-            }
 
-            else
-            {
-                IT.setPower(0);
-            }
-
-        }*/
         if (Math.abs(gamepad2.left_trigger) > 0.1)
         {
             IT.setPower(-gamepad2.left_trigger*0.8);
         }
-
-        //Stop Intake
+        //Start Intake
         else if (Math.abs(gamepad2.right_trigger) > 0.1)
         {
-            IT.setPower(gamepad2.right_trigger*0.8);
+
+            if ((manip.getVoltage() < voltage - 0.8) || (manip.senseColor())){
+
+                manip.intake(true);
+            }
+
+            else {
+                IT.setPower(gamepad2.right_trigger*0.8);
+            }
         }
 
         else
         {
             IT.setPower(0);
         }
+
+
 
         // Switch back to manual lift
         if (Math.abs(gamepad2.right_stick_y) > 0.1) manual = true;
