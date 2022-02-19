@@ -30,6 +30,7 @@ public class MainTeleOp extends OpMode
     public HashMap<String, Boolean> buttons = new HashMap<String, Boolean>();
     double[] motorPower = {0, 0, 0, 0};
     double duckSpeed = 0.6;
+    boolean halfPressed = false;
 
 
     public void init()
@@ -72,7 +73,15 @@ public class MainTeleOp extends OpMode
         double leftX = 0;
         double rightX = 0;
 
-        if (isPressed("1y", gamepad1.y)) {
+        if (gamepad1.right_trigger > .25) {
+
+            halfPressed = true;
+        }
+        else {
+            halfPressed = false;
+        }
+
+        if (isPressed("1y", halfPressed)) {
             robot.setHalfspeed();
         }
 

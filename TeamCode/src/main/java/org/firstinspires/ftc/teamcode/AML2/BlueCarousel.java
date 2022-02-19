@@ -51,12 +51,12 @@ public class BlueCarousel extends LinearOpMode {
 
     // INTAKE TRAJECTORY (POINT TO WALL)
     public static double intake2X = -35;
-    public static double intake2Y = 68;
+    public static double intake2Y = 63;
     public static double intake2Ang = 315; // Degrees
 
     // INTAKE TRAJECTORY (BRING TOWARD CAROUSEL)
     public static double intake3X = -54;
-    public static double intake3Y = 68;
+    public static double intake3Y = 63;
     public static double intake3Ang = 315; // Degrees
 
     // WIGGLE ANGLES1 (PICK UP DUCK)
