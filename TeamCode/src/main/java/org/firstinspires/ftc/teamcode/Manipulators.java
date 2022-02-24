@@ -27,8 +27,8 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2725;
-    public static int mid = 3260;
+    public static int high = 2825;
+    public static int mid = 3360;
     public static int low = 3747;
 
     // Capstone -1967
@@ -126,8 +126,8 @@ public class Manipulators {
     }
 
     public void blueCarousel(){
-        RC.setPower(0.55);
-        LC.setPower(0.55);
+        RC.setPower(0.6);
+        LC.setPower(0.6);
     }
 
     public void initialCarousel(double speed){
@@ -178,9 +178,9 @@ public class Manipulators {
         return gate.getPosition();
     }
 
-    public void gatePos(int pos) {
+    public void gatePos(double pos) {
         if (pos == 3) gate.setPosition(0);
-        if (pos == 2) gate.setPosition(0);
+        if (pos == 2) gate.setPosition(0.4);
         if (pos == 1) gate.setPosition(0.5);
     }
 
@@ -191,6 +191,10 @@ public class Manipulators {
     public void intake(boolean out) {
         if (out) IT.setPower(-1);
         else IT.setPower(1);
+    }
+
+    public void slowIntake() {
+        IT.setPower(0.8);
     }
 
     public double getVoltage()

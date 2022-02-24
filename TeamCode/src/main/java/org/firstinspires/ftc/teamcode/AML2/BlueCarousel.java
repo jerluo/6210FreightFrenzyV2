@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 public class BlueCarousel extends LinearOpMode {
 
     enum State {
+        WAIT,
         ARM,
         DEPOT,                  // Go to depot
         OUTTAKE,                // Outtake cargo
@@ -51,12 +52,12 @@ public class BlueCarousel extends LinearOpMode {
 
     // INTAKE TRAJECTORY (POINT TO WALL)
     public static double intake2X = -35;
-    public static double intake2Y = 63;
+    public static double intake2Y = 67;
     public static double intake2Ang = 315; // Degrees
 
     // INTAKE TRAJECTORY (BRING TOWARD CAROUSEL)
     public static double intake3X = -54;
-    public static double intake3Y = 63;
+    public static double intake3Y = 67;
     public static double intake3Ang = 315; // Degrees
 
     // WIGGLE ANGLES1 (PICK UP DUCK)
@@ -65,7 +66,7 @@ public class BlueCarousel extends LinearOpMode {
     public static double wiggle1Ang = 290; // Degrees
 
     public static double wiggle2X = -46;
-    public static double wiggle2Y = 69;
+    public static double wiggle2Y = 68;
     public static double wiggle2Ang = 270; // Degrees
 
     // PARK TRAJECTORY
@@ -76,6 +77,8 @@ public class BlueCarousel extends LinearOpMode {
     // Decrease to be closer to the hub
     public static double offsetMid = 3;
     public static double offsetLow = 2.5;
+
+    public static double startWait = 0;
 
 
     State currentState = State.IDLE;
@@ -89,10 +92,10 @@ public class BlueCarousel extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        double waitOuttake = 1.5;
+        double waitOuttake = 0.5;
         double waitArm = 1;
         double waitIntake = 4;
-        double waitCarousel = 2.5;
+        double waitCarousel = 3.5;
         ElapsedTime waitTimer = new ElapsedTime();
 
         int cycles = 1;
@@ -127,7 +130,7 @@ public class BlueCarousel extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(intake2X, intake2Y, Math.toRadians(intake2Ang)))
                 .lineToLinearHeading(new Pose2d(intake3X, intake3Y, Math.toRadians(intake3Ang)))
                 .lineToLinearHeading(new Pose2d(wiggle2X, wiggle2Y, Math.toRadians(wiggle2Ang)),
-                        SampleMecanumDrive.getVelocityConstraint(Math.toRadians(240), DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
                 .build();
@@ -137,7 +140,7 @@ public class BlueCarousel extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(parkX, parkY, Math.toRadians(parkAng)))
                 .build();
 
-        currentState = State.ARM;
+        currentState = State.WAIT;
 
         manip.automaticLift(pos);
         waitTimer.reset();
@@ -146,6 +149,11 @@ public class BlueCarousel extends LinearOpMode {
 
 
             switch (currentState) {
+
+                case WAIT:
+                    if (waitTimer.seconds() >= startWait) {
+                        currentState = State.ARM;
+                    }
 
                 case ARM:
                     if (waitTimer.seconds() >= waitArm) {
@@ -174,10 +182,9 @@ public class BlueCarousel extends LinearOpMode {
                     // stop the outtake and retract arm. Decide whether
                     // to continue to cycle going to carousel or park
 
-                    if (waitTimer.seconds() >= waitOuttake - 1.25) {
-                        manip.gatePos(pos);
-                        pos = 3;
-                    }
+
+                    manip.gatePos(pos);
+
 
                     if (waitTimer.seconds() >= waitOuttake) {
                         currentState = State.RETRACT;
@@ -231,7 +238,7 @@ public class BlueCarousel extends LinearOpMode {
 
                         manip.carouselStop();
 
-                        manip.intake(false);
+                        manip.slowIntake();
                         waitTimer.reset();
 
                     }
@@ -281,6 +288,8 @@ public class BlueCarousel extends LinearOpMode {
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.addData("position", pos);
+
             telemetry.update();
         }
 

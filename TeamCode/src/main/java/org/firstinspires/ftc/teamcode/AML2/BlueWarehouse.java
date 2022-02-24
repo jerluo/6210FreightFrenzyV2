@@ -61,6 +61,8 @@ public class BlueWarehouse extends LinearOpMode {
     public static double offsetMid = 3;
     public static double offsetLow = 4;
 
+    public static double waitServo = 2.1;
+
     int cycles = 4;
 
     State currentState = State.IDLE;
@@ -241,6 +243,7 @@ public class BlueWarehouse extends LinearOpMode {
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
                             cycleX += 3;
+                            waitServo += 0.05;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -276,7 +279,7 @@ public class BlueWarehouse extends LinearOpMode {
                                     .setReversed(true)
                                     .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
                                     //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                                    .splineTo(new Vector2d(intakeCycleX + cycleX - 1, intakeCycleY ), Math.toRadians(0))
+                                    .splineTo(new Vector2d(intakeX, intakeY ), Math.toRadians(0))
                                     .build();
 
                             drive.followTrajectorySequenceAsync(warehouseOut);
@@ -328,14 +331,17 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift+1.15) {
+                    if (waitTimer.seconds() >= waitServo) {
 
-                        manip.gate(true);
+                        //manip.gate(true);
 
                     }
 
+                    if (poseEstimate.getY() < 58) manip.gate(true);
+
                     if (!drive.isBusy() || poseEstimate.getY() < 56) {
                         currentState = State.OUTTAKE;
+
 
                         waitTimer.reset();
                     }
