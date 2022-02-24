@@ -205,11 +205,11 @@ public class MainTeleOp extends OpMode
         //sped duck macro
         if (gamepad1.right_bumper) {
             manip.initialCarousel(duckSpeed);
-            duckSpeed *= 1.035;
+            duckSpeed *= 1.02;
         }
         else if (gamepad1.left_bumper) {
             manip.initialCarousel(-duckSpeed);
-            duckSpeed *= 1.035;
+            duckSpeed *= 1.02;
         }
         else {
             duckSpeed = 0.6;
