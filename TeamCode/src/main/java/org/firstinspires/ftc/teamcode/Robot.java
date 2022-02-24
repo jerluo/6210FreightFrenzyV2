@@ -121,4 +121,8 @@ public class Robot {
     public void setHalfspeed() {
         halfspeed = !halfspeed;
     }
+
+    public void pushHalfspeed(boolean down) {
+        halfspeed = down;
+    }
 }

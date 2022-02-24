@@ -178,7 +178,7 @@ public class RedWarehouse extends LinearOpMode {
                     // Then stop intake and retract
                     // Go into warehouse trajectory
 
-                    if (waitTimer.seconds() >= waitOuttake) {
+                    /*if (waitTimer.seconds() >= waitOuttake) {
                         currentState = State.WAREHOUSE_IN;
 
                         voltage = manip.getVoltage();
@@ -190,7 +190,7 @@ public class RedWarehouse extends LinearOpMode {
                         drive.followTrajectorySequenceAsync(warehouseIn);
 
                         waitTimer.reset();
-                    }
+                    }*/
 
                     break;
 
@@ -216,10 +216,10 @@ public class RedWarehouse extends LinearOpMode {
 
 
                     // If voltage spike, outtake fast and then continue intaking
-                    if (manip.getVoltage() < voltage - 2) {
+                    /*if (manip.getVoltage() < voltage - 2) {
                         currentState = State.STUCK;
                         waitTimer.reset();
-                    }
+                    }*/
 
                     // if getvoltage < voltage - 2
                     // waittime reset
@@ -369,9 +369,9 @@ public class RedWarehouse extends LinearOpMode {
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.addData("state", currentState);
             telemetry.addData("color", manip.colorValue());
-            telemetry.addData("voltage", manip.getVoltage());
+            //telemetry.addData("voltage", manip.getVoltage());
             telemetry.addData("voltage check: ", voltage);
-            telemetry.addData("velocity", manip.intakeVelocity());
+            //telemetry.addData("velocity", manip.intakeVelocity());
             telemetry.update();
         }
 

@@ -27,7 +27,7 @@ public class ColorTest extends LinearOpMode {
             telemetry.addData("Red", color.red());
             telemetry.addData("Green", color.green());
             telemetry.addData("Blue", color.blue());
-            telemetry.addData("Red", manip.getVoltage());
+            //telemetry.addData("Red", manip.getVoltage());
             telemetry.update();
         }
 
