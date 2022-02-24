@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.AML2;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.AML1.RedCloseAuto;
 import org.firstinspires.ftc.teamcode.Manipulators;
 import org.firstinspires.ftc.teamcode.VuforiaBM;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 public class RedCarousel extends LinearOpMode {
 
     enum State {
+        WAIT,
         ARM,
         DEPOT,                  // Go to depot
         OUTTAKE,                // Outtake cargo
@@ -27,14 +29,15 @@ public class RedCarousel extends LinearOpMode {
         DUCK,                   // Drive and intake for duck
         // DEPOT -> LIFT -> OUTTAKE -> RETRACT
         PARK,                   // Drive
-        IDLE                    // Our bot will enter the IDLE state when done
+        IDLE,                    // Our bot will enter the IDLE state when done
+        TEST
     }
 
-    Pose2d startPose = new Pose2d(-33, -70, Math.toRadians(90));
+    Pose2d startPose = new Pose2d(-33, 70, Math.toRadians(90));
 
     // DEPOT TRAJECTORY
     public static double depotX = -14.5;
-    public static double depotY = -54;
+    public static double depotY = -54; //before change this was 50
     public static double depotAng = 90; // Degrees
 
     // CAROUSEL TRAJECTORY
@@ -42,19 +45,19 @@ public class RedCarousel extends LinearOpMode {
     public static double carouselY = -64;
     public static double carouselAng = 60; // Degrees
 
-    // INTAKE TRAJECTORY
+    // INTAKE TRAJECTORY (FORWARD OUT OF CAROUSEL)
     public static double intakeX = -55;
     public static double intakeY = -50;
     public static double intakeAng = 90; // Degrees
 
-    // INTAKE TRAJECTORY
+    // INTAKE TRAJECTORY (POINT TO WALL)
     public static double intake2X = -35;
     public static double intake2Y = -67;
     public static double intake2Ang = 65; // Degrees
 
     // INTAKE TRAJECTORY (BRING TOWARD CAROUSEL)
     public static double intake3X = -55;
-    public static double intake3Y = -67;
+    public static double intake3Y = 67;
     public static double intake3Ang = 45; // Degrees
 
     // WIGGLE ANGLES1 (PICK UP DUCK)
@@ -75,6 +78,8 @@ public class RedCarousel extends LinearOpMode {
     public static double offsetMid = 3;
     public static double offsetLow = 5;
 
+    public static double startWait = 0;
+
 
     State currentState = State.IDLE;
 
@@ -87,15 +92,13 @@ public class RedCarousel extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        double waitOuttake = 1.5;
+        double waitOuttake = 0.5;
         double waitArm = 1;
         double waitIntake = 4;
-        double waitCarousel = 2.5;
+        double waitCarousel = 3.5;
         ElapsedTime waitTimer = new ElapsedTime();
 
         int cycles = 1;
-
-
 
         manip.gate(false);
         telemetry.addLine("init done");
@@ -104,7 +107,7 @@ public class RedCarousel extends LinearOpMode {
         waitForStart();
 
         // Start doing vision
-        int pos = vuforia.blueWarehousePosition();
+        int pos = vuforia.blueCarouselPosition();
 
         double offset = 0;
 
@@ -113,7 +116,8 @@ public class RedCarousel extends LinearOpMode {
 
         // Trajectory to depot
         Trajectory depot = drive.trajectoryBuilder(startPose)
-                .lineToLinearHeading(new Pose2d(depotX, depotY - offset, Math.toRadians(depotAng)))
+                .lineToLinearHeading(new Pose2d(depotX, depotY + offset, Math.toRadians(depotAng)))
+
                 .build();
 
         // Trajectory to carousel
@@ -126,22 +130,18 @@ public class RedCarousel extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(intakeX, intakeY, Math.toRadians(intakeAng)))
                 .lineToLinearHeading(new Pose2d(intake2X, intake2Y, Math.toRadians(intake2Ang)))
                 .lineToLinearHeading(new Pose2d(intake3X, intake3Y, Math.toRadians(intake3Ang)))
-                //wiggle
-                //.lineToLinearHeading(new Pose2d(wiggle1X, wiggle1Y, Math.toRadians(wiggle1Ang)))
-                //.lineToLinearHeading(new Pose2d(intake3X, intake3Y, Math.toRadians(intake3Ang)))
                 .lineToLinearHeading(new Pose2d(wiggle2X, wiggle2Y, Math.toRadians(wiggle2Ang)),
-                        SampleMecanumDrive.getVelocityConstraint(Math.toRadians(240), DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
                 .build();
 
         // Trajectory to park
         TrajectorySequence park = drive.trajectorySequenceBuilder(depot.end())
-                .lineToLinearHeading(new Pose2d(intakeX, intakeY, Math.toRadians(parkAng)))
                 .lineToLinearHeading(new Pose2d(parkX, parkY, Math.toRadians(parkAng)))
                 .build();
 
-        currentState = State.ARM;
+        currentState = State.WAIT;
 
         manip.automaticLift(pos);
         waitTimer.reset();
@@ -150,6 +150,11 @@ public class RedCarousel extends LinearOpMode {
 
 
             switch (currentState) {
+
+                case WAIT:
+                    if (waitTimer.seconds() >= startWait) {
+                        currentState = State.ARM;
+                    }
 
                 case ARM:
                     if (waitTimer.seconds() >= waitArm) {
@@ -178,10 +183,10 @@ public class RedCarousel extends LinearOpMode {
                     // stop the outtake and retract arm. Decide whether
                     // to continue to cycle going to carousel or park
 
-                    if (waitTimer.seconds() >= waitOuttake - 1.25) {
-                        manip.gatePos(pos);
-                        pos = 3;
-                    }
+
+                    manip.gatePos(pos);
+
+
                     if (waitTimer.seconds() >= waitOuttake) {
                         currentState = State.RETRACT;
 
@@ -193,6 +198,8 @@ public class RedCarousel extends LinearOpMode {
 
                             cycles--;
                             pos = 3;
+                            waitArm = 0;
+
                             depot = drive.trajectoryBuilder(startPose)
                                     .lineToLinearHeading(new Pose2d(depotX, depotY, Math.toRadians(depotAng)))
                                     .build();
@@ -215,7 +222,7 @@ public class RedCarousel extends LinearOpMode {
                         currentState = State.CAROUSEL;
 
                         manip.stopLift();
-                        manip.redCarousel();
+                        manip.blueCarousel();
 
                         waitTimer.reset();
                     }
@@ -232,7 +239,7 @@ public class RedCarousel extends LinearOpMode {
 
                         manip.carouselStop();
 
-                        manip.intake(false);
+                        manip.slowIntake();
                         waitTimer.reset();
 
                     }
@@ -245,21 +252,14 @@ public class RedCarousel extends LinearOpMode {
 
                     if (!drive.isBusy()) {
                         if (waitTimer.seconds() >= waitIntake) {
-
-
-
-                            manip.gate(false);
-
-
-                        }
-
-                        if (waitTimer.seconds() >= waitIntake+1) {
-                            manip.intakeStop();
-
                             currentState = State.DEPOT;
                             drive.followTrajectoryAsync(depot);
+
+                            manip.gate(false);
+                            manip.intakeStop();
                             manip.automaticLift(3);
                         }
+
                     }
 
                     // GO BACK TO DEPOT CYCLE
@@ -289,6 +289,8 @@ public class RedCarousel extends LinearOpMode {
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.addData("position", pos);
+
             telemetry.update();
         }
 
