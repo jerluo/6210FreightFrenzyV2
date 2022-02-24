@@ -41,7 +41,6 @@ public class BlueWarehouse extends LinearOpMode {
     public static double warehouseInX = 27;
     public static double warehouseInY = 74;
 
-
     // INTAKE TRAJECTORY
     public static double intakeX = 45;
     public static double intakeY = 74;
@@ -54,7 +53,7 @@ public class BlueWarehouse extends LinearOpMode {
 
     // DEPOT CYCLE TRAJECTORY
     public static double depotCycleX = -8;
-    public static double depotCycleY = 54;
+    public static double depotCycleY = 56;
     public static double depotCycleAng = 250;
 
     // Decrease to be closer to the hub
@@ -81,15 +80,18 @@ public class BlueWarehouse extends LinearOpMode {
         double waitArm = 0.5;
         double waitOuttake = 0.01;
         double waitIntake = 2;
-        double waitIntakeOut = 0.01;
+        double waitIntakeOut = 0.2;
         double waitLift = 0.75;
         ElapsedTime waitTimer = new ElapsedTime();
+        ElapsedTime matchTime = new ElapsedTime();
 
         manip.gate(false);
         telemetry.addLine("init done");
         telemetry.update();
 
         waitForStart();
+
+        matchTime.reset();
 
         // Do vision
         int pos = vuforia.blueWarehousePosition();
@@ -130,7 +132,7 @@ public class BlueWarehouse extends LinearOpMode {
         manip.automaticLift(pos);
         waitTimer.reset();
 
-        double cycleX = 2;
+        double cycleX = 0;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -166,6 +168,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (!drive.isBusy()) {
                         currentState = State.OUTTAKE;
+                        manip.gate(true);
                         waitTimer.reset();
                     }
 
@@ -220,30 +223,13 @@ public class BlueWarehouse extends LinearOpMode {
                         waitTimer.reset();
                     }
 
-                    // if getvoltage < voltage - 2
-                    // waittime reset
-                    // change state
-                    // outtake for .5
-                    // start intaking again
-                    // change state warehouse_in
-
-
-
-                    // If velocity slows, assume freight is inside intake, stop trajectory
-                    // if velocityIntake < velocity - 2
-                    // drive.followTrajectorySequence(null);
-                    // waitIntake += 0.5?
-
-
-
-
+                    // || poseEstimate.getX() > depotCycleX + cycleX
                     if (!drive.isBusy()) {
 
                         // Continue
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 3;
-                            waitServo += 0.05;
+                            cycleX += 2;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -316,8 +302,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift) {
-
+                    if (poseEstimate.getX() < warehouseInX) {
 
                         manip.gate(false);
                         manip.automaticLift(3);
@@ -325,21 +310,18 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift+0.6) {
+                    /*
+                    if (waitTimer.seconds() >= waitLift) {
 
+                        manip.gate(false);
+                        manip.automaticLift(3);
+                        manip.intakeStop();
 
+                    }*/
 
-                    }
+                    if (poseEstimate.getY() < depotCycleY + 2) manip.gate(true);
 
-                    if (waitTimer.seconds() >= waitServo) {
-
-                        //manip.gate(true);
-
-                    }
-
-                    if (poseEstimate.getY() < 58) manip.gate(true);
-
-                    if (!drive.isBusy() || poseEstimate.getY() < 56) {
+                    if (!drive.isBusy() || poseEstimate.getY() < depotCycleY) {
                         currentState = State.OUTTAKE;
 
 
@@ -383,6 +365,7 @@ public class BlueWarehouse extends LinearOpMode {
             telemetry.addData("voltage", manip.getVoltage());
             telemetry.addData("voltage check: ", voltage);
             telemetry.addData("velocity", manip.intakeVelocity());
+            telemetry.addData("match time", matchTime.seconds());
             telemetry.update();
         }
 

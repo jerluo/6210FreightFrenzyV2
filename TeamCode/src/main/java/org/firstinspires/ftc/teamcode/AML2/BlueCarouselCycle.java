@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.AML2;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.AML1.RedCloseAuto;
 import org.firstinspires.ftc.teamcode.Manipulators;
 import org.firstinspires.ftc.teamcode.VuforiaBM;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
 @Autonomous(name = "Blue Carousel", group = "blue")
-public class BlueCarousel extends LinearOpMode {
+public class BlueCarouselCycle extends LinearOpMode {
 
     enum State {
         WAIT,
@@ -30,10 +30,12 @@ public class BlueCarousel extends LinearOpMode {
         // DEPOT -> LIFT -> OUTTAKE -> RETRACT
         PARK,                   // Drive
         IDLE,                    // Our bot will enter the IDLE state when done
-        TEST
+        WAREHOUSE_IN,
+        WAREHOUSE_OUT
     }
 
     Pose2d startPose = new Pose2d(-33, 70, Math.toRadians(270));
+    Pose2d poseEstimate;
 
     // DEPOT TRAJECTORY
     public static double depotX = -14.5;
@@ -78,6 +80,21 @@ public class BlueCarousel extends LinearOpMode {
     public static double offsetMid = 3;
     public static double offsetLow = 2.5;
 
+    // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
+    public static double warehouseInX = 27;
+    public static double warehouseInY = 74;
+
+    // INTAKE TRAJECTORY
+    public static double intakeCycleX = 45;
+    public static double intakeCycleY = 74;
+    public static double intakeCycleAngle = 345; // 345
+
+    // DEPOT CYCLE TRAJECTORY
+    public static double depotCycleX = -8;
+    public static double depotCycleY = 56;
+    public static double depotCycleAng = 250;
+
+
     public static double startWait = 0;
 
 
@@ -93,12 +110,15 @@ public class BlueCarousel extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         double waitOuttake = 0.5;
-        double waitArm = 1;
+        double waitArm = 0.5;
         double waitIntake = 4;
+        double waitIntakeCycle = 2;
         double waitCarousel = 3.5;
+        double waitIntakeOut = 0.2;
         ElapsedTime waitTimer = new ElapsedTime();
 
-        int cycles = 1;
+        int cycles = 3;
+        int cycleX = 3;
 
         manip.gate(false);
         telemetry.addLine("init done");
@@ -136,10 +156,20 @@ public class BlueCarousel extends LinearOpMode {
 
                 .build();
 
-        // Trajectory to park
-        TrajectorySequence park = drive.trajectorySequenceBuilder(depot.end())
-                .lineToLinearHeading(new Pose2d(parkX, parkY, Math.toRadians(parkAng)))
+        // Trajectory to warehouse
+        TrajectorySequence warehouseIn = drive.trajectorySequenceBuilder(depot.end())
+                .setReversed(true)
+                //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(0))
                 .build();
+
+        TrajectorySequence warehouseOut = drive.trajectorySequenceBuilder(warehouseIn.end())
+                .setReversed(false)
+                .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
+                .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
+                .build();
+
 
         currentState = State.WAIT;
 
@@ -148,6 +178,7 @@ public class BlueCarousel extends LinearOpMode {
 
         while (opModeIsActive() && !isStopRequested()) {
 
+            poseEstimate = drive.getPoseEstimate();
 
             switch (currentState) {
 
@@ -160,6 +191,8 @@ public class BlueCarousel extends LinearOpMode {
                     if (waitTimer.seconds() >= waitArm) {
                         drive.followTrajectoryAsync(depot);
                         currentState = State.DEPOT;
+                        waitTimer.reset();
+
                     }
 
                     break;
@@ -169,9 +202,21 @@ public class BlueCarousel extends LinearOpMode {
 
                 case DEPOT:
 
+                    if (pos != 3) {
+                        if (waitTimer.seconds() >= 1.6) {
+                            manip.gatePos(pos);
+                        }
+                    }
+
+                    else if (waitTimer.seconds() >= 1) {
+
+                        manip.gatePos(pos);
+
+                    }
+
                     if (!drive.isBusy()) {
                         currentState = State.OUTTAKE;
-
+                        manip.gate(true);
                         waitTimer.reset();
                     }
 
@@ -183,16 +228,12 @@ public class BlueCarousel extends LinearOpMode {
                     // stop the outtake and retract arm. Decide whether
                     // to continue to cycle going to carousel or park
 
-
-                    manip.gatePos(pos);
-
-
                     if (waitTimer.seconds() >= waitOuttake) {
-                        currentState = State.RETRACT;
 
                         manip.automaticLift(0);
+                        pos = 3;
 
-                        if (cycles > 0){
+                        if (cycles == 3){
                             currentState = State.CAROUSEL_TRAJECTORY;
                             drive.followTrajectoryAsync(carousel);
 
@@ -205,8 +246,9 @@ public class BlueCarousel extends LinearOpMode {
                                     .build();
                         }
                         else {
-                            currentState = State.PARK;
-                            drive.followTrajectorySequenceAsync(park);
+                            currentState = State.WAREHOUSE_IN;
+
+                            drive.followTrajectorySequenceAsync(warehouseIn);
                         }
 
                         waitTimer.reset();
@@ -251,7 +293,7 @@ public class BlueCarousel extends LinearOpMode {
                     // and go back to depot
 
                     if (!drive.isBusy()) {
-                        if (waitTimer.seconds() >= waitIntake) {
+                        if (waitTimer.seconds() >= waitIntakeCycle) {
                             currentState = State.DEPOT;
                             drive.followTrajectoryAsync(depot);
 
@@ -265,10 +307,90 @@ public class BlueCarousel extends LinearOpMode {
                     // GO BACK TO DEPOT CYCLE
 
                     break;
-                case PARK:
+
+                case WAREHOUSE_IN:
+
+                    if (waitTimer.seconds() >= waitIntake) {
+
+                        manip.intake(false);
+                        // Check if freight inside the bucket -> stops intake
+                        if (manip.senseColor()){
+                            manip.intakeStop();
+                            drive.followTrajectorySequence(null);
+                        }
+
+                    }
 
                     if (!drive.isBusy()) {
-                        currentState = State.IDLE;
+
+                        // Continue
+                        if (cycles > 0) {
+                            currentState = State.WAREHOUSE_OUT;
+                            cycleX += 2;
+
+                            warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
+                                    .setReversed(false)
+                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
+                                    .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
+                                    .build();
+
+                            warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
+                                    .setReversed(true)
+                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                                    //.lineToSplineHeading(new Pose2d(intakeCycleX + cycleX, warehouseInY, Math.toRadians(165)))
+                                    .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(intakeCycleAngle))
+                                    .build();
+
+                            drive.followTrajectorySequenceAsync(warehouseOut);
+
+                            waitTimer.reset();
+                            cycles--;
+
+                        }
+                        // Stop
+                        else {
+                            currentState = State.IDLE;
+
+                            manip.intakeStop();
+                            manip.gate(false);
+                        }
+                    }
+
+                    break;
+
+                case WAREHOUSE_OUT:
+
+                    if (waitTimer.seconds() >= waitIntakeOut) {
+
+                        manip.intake(true);
+
+                    }
+
+                    if (poseEstimate.getX() < warehouseInX) {
+
+                        manip.gate(false);
+                        manip.automaticLift(3);
+                        manip.intakeStop();
+
+                    }
+
+                    /*
+                    if (waitTimer.seconds() >= waitLift) {
+
+                        manip.gate(false);
+                        manip.automaticLift(3);
+                        manip.intakeStop();
+
+                    }*/
+
+                    if (poseEstimate.getY() < depotCycleY + 2) manip.gate(true);
+
+                    if (!drive.isBusy() || poseEstimate.getY() < depotCycleY) {
+                        currentState = State.OUTTAKE;
+
+                        waitTimer.reset();
+
                     }
 
                     break;
