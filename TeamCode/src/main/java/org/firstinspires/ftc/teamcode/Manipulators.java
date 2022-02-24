@@ -27,7 +27,7 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2825;
+    public static int high = 2800;
     public static int mid = 3360;
     public static int low = 3747;
 
@@ -217,7 +217,7 @@ public class Manipulators {
 
     public boolean senseColor(){
 
-        if (color.red() > 300 || color.green()  > 400) {
+        if (color.red() > 100 || color.green()  > 150) {
             return true;
         }
 

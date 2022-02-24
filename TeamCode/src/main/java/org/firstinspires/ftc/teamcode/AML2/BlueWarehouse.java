@@ -52,9 +52,9 @@ public class BlueWarehouse extends LinearOpMode {
     public static double intakeCycleAngle = 345; // 345
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -8;
-    public static double depotCycleY = 56;
-    public static double depotCycleAng = 250;
+    public static double depotCycleX = -7;
+    public static double depotCycleY = 54;
+    public static double depotCycleAng = 260;
 
     // Decrease to be closer to the hub
     public static double offsetMid = 3;
@@ -75,6 +75,7 @@ public class BlueWarehouse extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
         Pose2d poseEstimate;
+        boolean stopTrajectory = false;
         double voltage = 100;
 
         double waitArm = 0.5;
@@ -209,6 +210,7 @@ public class BlueWarehouse extends LinearOpMode {
                         // Check if freight inside the bucket -> stops intake
                         if (manip.senseColor()){
                             manip.intakeStop();
+                            stopTrajectory = true;
                             drive.followTrajectorySequence(null);
                         }
 
@@ -224,12 +226,14 @@ public class BlueWarehouse extends LinearOpMode {
                     }
 
                     // || poseEstimate.getX() > depotCycleX + cycleX
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy() || stopTrajectory) {
+
+                        stopTrajectory = false;
 
                         // Continue
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 2;
+                            cycleX += 3;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -302,7 +306,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (poseEstimate.getX() < warehouseInX) {
+                    if (poseEstimate.getX() < warehouseInX + 1) {
 
                         manip.gate(false);
                         manip.automaticLift(3);
@@ -319,7 +323,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }*/
 
-                    if (poseEstimate.getY() < depotCycleY + 2) manip.gate(true);
+                    if (poseEstimate.getY() < depotCycleY + 1.25) manip.gate(true);
 
                     if (!drive.isBusy() || poseEstimate.getY() < depotCycleY) {
                         currentState = State.OUTTAKE;

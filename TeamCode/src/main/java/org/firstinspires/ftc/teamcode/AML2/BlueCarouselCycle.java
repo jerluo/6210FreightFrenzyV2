@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
-@Autonomous(name = "Blue Carousel", group = "blue")
+@Autonomous(name = "Hydra Special", group = "blue")
 public class BlueCarouselCycle extends LinearOpMode {
 
     enum State {
