@@ -38,7 +38,7 @@ public class BlueWarehouse extends LinearOpMode {
     public static double depotAng = 270; // Degrees
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
-    public static double warehouseInX = 27;
+    public static double warehouseInX = 28;
     public static double warehouseInY = 74;
 
     // INTAKE TRAJECTORY
@@ -49,10 +49,10 @@ public class BlueWarehouse extends LinearOpMode {
     // INTAKE TRAJECTORY
     public static double intakeCycleX = 45;
     public static double intakeCycleY = 68; // 67
-    public static double intakeCycleAngle = 345; // 345
+    public static double intakeCycleAngle = 350; // 345
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -7;
+    public static double depotCycleX = -7.5;
     public static double depotCycleY = 54;
     public static double depotCycleAng = 260;
 
@@ -284,7 +284,6 @@ public class BlueWarehouse extends LinearOpMode {
                             currentState = State.IDLE;
 
                             manip.intakeStop();
-                            manip.gate(false);
                         }
 
                     }
@@ -306,7 +305,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (poseEstimate.getX() < warehouseInX + 1) {
+                    if (poseEstimate.getX() < warehouseInX + 1.5) {
 
                         manip.gate(false);
                         manip.automaticLift(3);
@@ -323,7 +322,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }*/
 
-                    if (poseEstimate.getY() < depotCycleY + 1.25) manip.gate(true);
+                    if (poseEstimate.getY() < depotCycleY + 2) manip.gate(true);
 
                     if (!drive.isBusy() || poseEstimate.getY() < depotCycleY) {
                         currentState = State.OUTTAKE;

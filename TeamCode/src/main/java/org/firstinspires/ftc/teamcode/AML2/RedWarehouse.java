@@ -39,36 +39,37 @@ public class RedWarehouse extends LinearOpMode {
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
     public static double warehouseInX = 24;
-    public static double warehouseInY = -75;
+    public static double warehouseInY = -76;
 
     public static double warehouseOutX = 5;
     public static double warehouseOutY = -68;
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 46;
-    public static double intakeY = -74;
+    public static double intakeX = 44;
+    public static double intakeY = -76;
     public static double intakeAngle = 0;
 
     // INTAKE TRAJECTORY
     public static double intakeCycleX = 46;
     public static double intakeCycleY = -68;
-    public static double intakeCycleAngle = 25;
+    public static double intakeCycleAngle = 10;
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -5;
-    public static double depotCycleY = -54;
-    public static double depotCycleAng = 115;
+    public static double depotCycleX = -6;
+    public static double depotCycleY = -55;
+    public static double depotCycleAng = 100;
 
     // Decrease to be closer to the hub
     public static double offsetMid = 2.5;
     public static double offsetLow = 4;
 
-    int cycles = 3;
+    int cycles = 4;
 
     State currentState = State.IDLE;
 
     @Override
     public void runOpMode() throws InterruptedException{
+
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Manipulators manip = new Manipulators(hardwareMap);
@@ -76,14 +77,16 @@ public class RedWarehouse extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
         Pose2d poseEstimate;
+        boolean stopTrajectory = false;
         double voltage = 100;
 
         double waitArm = 0.5;
-        double waitOuttake = 0.2;
+        double waitOuttake = 0.01;
         double waitIntake = 2;
-        double waitIntakeOut = 0.5;
-        double waitLift = 1.5;
+        double waitIntakeOut = 0.2;
+        double waitLift = 0.75;
         ElapsedTime waitTimer = new ElapsedTime();
+        ElapsedTime matchTime = new ElapsedTime();
 
         manip.gate(false);
         telemetry.addLine("init done");
@@ -91,8 +94,10 @@ public class RedWarehouse extends LinearOpMode {
 
         waitForStart();
 
+        matchTime.reset();
+
         // Do vision
-        int pos = vuforia.blueCarouselPosition();
+        int pos = vuforia.blueWarehousePosition();
 
         double offset = 0;
 
@@ -107,10 +112,9 @@ public class RedWarehouse extends LinearOpMode {
         // Trajectory to warehouse
         TrajectorySequence warehouseIn = drive.trajectorySequenceBuilder(depot.end())
                 .setReversed(true)
-                .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(20, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0))
                 .build();
 
         // Trajectory to out of warehouse
@@ -131,7 +135,7 @@ public class RedWarehouse extends LinearOpMode {
         manip.automaticLift(pos);
         waitTimer.reset();
 
-        double cycleX = 2;
+        double cycleX = 0;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -157,9 +161,7 @@ public class RedWarehouse extends LinearOpMode {
                         if (waitTimer.seconds() >= 1.6) {
                             manip.gatePos(pos);
                         }
-                    }
-
-                    else if (waitTimer.seconds() >= 1) {
+                    } else if (waitTimer.seconds() >= 1) {
 
                         manip.gatePos(pos);
 
@@ -167,6 +169,7 @@ public class RedWarehouse extends LinearOpMode {
 
                     if (!drive.isBusy()) {
                         currentState = State.OUTTAKE;
+                        manip.gate(true);
                         waitTimer.reset();
                     }
 
@@ -178,7 +181,7 @@ public class RedWarehouse extends LinearOpMode {
                     // Then stop intake and retract
                     // Go into warehouse trajectory
 
-                    /*if (waitTimer.seconds() >= waitOuttake) {
+                    if (waitTimer.seconds() >= waitOuttake) {
                         currentState = State.WAREHOUSE_IN;
 
                         voltage = manip.getVoltage();
@@ -190,7 +193,7 @@ public class RedWarehouse extends LinearOpMode {
                         drive.followTrajectorySequenceAsync(warehouseIn);
 
                         waitTimer.reset();
-                    }*/
+                    }
 
                     break;
 
@@ -205,45 +208,31 @@ public class RedWarehouse extends LinearOpMode {
 
                         manip.intake(false);
                         // Check if freight inside the bucket -> stops intake
-                        if (manip.senseColor()){
+                        if (manip.senseColor()) {
                             manip.intakeStop();
+                            stopTrajectory = true;
                             drive.followTrajectorySequence(null);
                         }
 
                     }
 
 
-
-
                     // If voltage spike, outtake fast and then continue intaking
-                    /*if (manip.getVoltage() < voltage - 2) {
+                    if (manip.getVoltage() < voltage - 2) {
                         currentState = State.STUCK;
                         waitTimer.reset();
-                    }*/
+                    }
 
-                    // if getvoltage < voltage - 2
-                    // waittime reset
-                    // change state
-                    // outtake for .5
-                    // start intaking again
-                    // change state warehouse_in
+                    // || poseEstimate.getX() > depotCycleX + cycleX
+                    if (!drive.isBusy() || stopTrajectory) {
 
-
-
-                    // If velocity slows, assume freight is inside intake, stop trajectory
-                    // if velocityIntake < velocity - 2
-                    // drive.followTrajectorySequence(null);
-                    // waitIntake += 0.5?
-
-
-
-
-                    if (!drive.isBusy()) {
+                        stopTrajectory = false;
 
                         // Continue
-                        if (cycles > 1 ) {
+                        if (cycles > 1) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 1 ;
+
+                            cycleX += 3;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -253,10 +242,10 @@ public class RedWarehouse extends LinearOpMode {
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                                    .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(intakeCycleAngle),
-                                            SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                                    //.lineToSplineHeading(new Pose2d(intakeCycleX + cycleX, warehouseInY, Math.toRadians(165)))
+                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY + 1), Math.toRadians(0))
                                     .build();
 
                             drive.followTrajectorySequenceAsync(warehouseOut);
@@ -264,9 +253,7 @@ public class RedWarehouse extends LinearOpMode {
                             waitTimer.reset();
                             cycles--;
 
-                        }
-
-                        else if (cycles > 0) {
+                        } else if (cycles > 0) {
                             currentState = State.WAREHOUSE_OUT;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
@@ -277,7 +264,8 @@ public class RedWarehouse extends LinearOpMode {
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
+                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
                                     .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0))
                                     .build();
 
@@ -315,22 +303,28 @@ public class RedWarehouse extends LinearOpMode {
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift) {
+                    if (poseEstimate.getX() < warehouseInX + 1.5) {
 
-                        manip.intakeStop();
                         manip.gate(false);
                         manip.automaticLift(3);
+                        manip.intakeStop();
 
                     }
 
-                    if (waitTimer.seconds() >= waitLift+1.1) {
+                    /*
+                    if (waitTimer.seconds() >= waitLift) {
 
-                        manip.gate(true);
+                        manip.gate(false);
+                        manip.automaticLift(3);
+                        manip.intakeStop();
 
-                    }
+                    }*/
 
-                    if (!drive.isBusy()) {
+                    if (poseEstimate.getY() > depotCycleY - 1.4) manip.gate(true);
+
+                    if (!drive.isBusy() || poseEstimate.getY() > depotCycleY - 0.5) {
                         currentState = State.OUTTAKE;
+
 
                         waitTimer.reset();
                     }
@@ -362,16 +356,16 @@ public class RedWarehouse extends LinearOpMode {
             // Read pose
 
 
-
             // Print pose to telemetry
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.addData("state", currentState);
             telemetry.addData("color", manip.colorValue());
-            //telemetry.addData("voltage", manip.getVoltage());
+            telemetry.addData("voltage", manip.getVoltage());
             telemetry.addData("voltage check: ", voltage);
-            //telemetry.addData("velocity", manip.intakeVelocity());
+            telemetry.addData("velocity", manip.intakeVelocity());
+            telemetry.addData("match time", matchTime.seconds());
             telemetry.update();
         }
 
