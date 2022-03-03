@@ -52,8 +52,8 @@ public class BlueWarehouse extends LinearOpMode {
     public static double intakeCycleAngle = 350; // 345
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -7.5;
-    public static double depotCycleY = 54;
+    public static double depotCycleX = -6;
+    public static double depotCycleY = 56;
     public static double depotCycleAng = 260;
 
     // Decrease to be closer to the hub
