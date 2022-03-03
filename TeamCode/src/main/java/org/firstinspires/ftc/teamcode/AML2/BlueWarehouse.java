@@ -246,7 +246,7 @@ public class BlueWarehouse extends LinearOpMode {
                                     //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
                                     .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
                                     //.lineToSplineHeading(new Pose2d(intakeCycleX + cycleX, warehouseInY, Math.toRadians(165)))
-                                    .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(intakeCycleAngle))
+                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY - 2), Math.toRadians(0))
                                     .build();
 
                             drive.followTrajectorySequenceAsync(warehouseOut);

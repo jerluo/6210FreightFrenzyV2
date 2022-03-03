@@ -34,7 +34,7 @@ public class RedWarehouse extends LinearOpMode {
 
     // DEPOT TRAJECTORY
     public static double depotX = -14.5;
-    public static double depotY = -55;
+    public static double depotY = -56;
     public static double depotAng = 90; // Degrees
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
@@ -97,7 +97,7 @@ public class RedWarehouse extends LinearOpMode {
         matchTime.reset();
 
         // Do vision
-        int pos = vuforia.blueWarehousePosition();
+        int pos = vuforia.blueCarouselPosition();
 
         double offset = 0;
 

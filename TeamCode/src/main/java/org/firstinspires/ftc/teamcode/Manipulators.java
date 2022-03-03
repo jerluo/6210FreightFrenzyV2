@@ -42,6 +42,7 @@ public class Manipulators {
     private DcMotor LC;
 
     private Servo gate;
+    private Servo cap;
 
     ColorSensor color;
 
@@ -55,6 +56,7 @@ public class Manipulators {
 
         //intake servos
         gate = robot.get(Servo.class, "gate");
+        cap = robot.get(Servo.class, "cap");
 
 
         // Lift
@@ -62,6 +64,7 @@ public class Manipulators {
 
         RL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         RL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //color sensor
         color = robot.get(ColorSensor.class, "Color");
@@ -172,6 +175,10 @@ public class Manipulators {
     public void gate(boolean open) {
         if (open) gate.setPosition(0);
         else gate.setPosition(1);
+    }
+
+    public void setCap(double pos) {
+        cap.setPosition(pos);
     }
 
     public double gatePosition(){

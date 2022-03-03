@@ -30,6 +30,7 @@ public class MainTeleOp extends OpMode
     public HashMap<String, Boolean> buttons = new HashMap<String, Boolean>();
     double[] motorPower = {0, 0, 0, 0};
     double duckSpeed = 0.6;
+    double capPos = 0;
     //int loopnum = 0;
 
     public void init()
@@ -239,6 +240,27 @@ public class MainTeleOp extends OpMode
         if (isPressed("lBumper", gamepad2.left_bumper)) manip.gate(true);
 
         if (isPressed("rBumper", gamepad2.right_bumper)) manip.gate(false);
+
+        if (isPressed("dpadup", gamepad2.dpad_up)) {
+            if (capPos < 1) capPos += 0.05;
+
+            manip.setCap(capPos);
+        }
+
+        if (isPressed("dpaddown", gamepad2.dpad_down)) {
+            if (capPos > 0) capPos -= 0.05;
+            manip.setCap(capPos);
+        }
+
+        if (isPressed("dpadleft", gamepad2.dpad_left)) {
+            capPos = 1;
+            manip.setCap(capPos);
+        }
+        if (isPressed("dpadright", gamepad2.dpad_right)) {
+            capPos = 0;
+            manip.setCap(capPos);
+        }
+
 
         //Changes to outtake
         /*
