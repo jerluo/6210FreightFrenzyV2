@@ -45,7 +45,7 @@ public class RedWarehouse extends LinearOpMode {
     public static double warehouseOutY = -68;
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 44;
+    public static double intakeX = 46;
     public static double intakeY = -76;
     public static double intakeAngle = 0;
 
@@ -55,15 +55,15 @@ public class RedWarehouse extends LinearOpMode {
     public static double intakeCycleAngle = 10;
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -6;
+    public static double depotCycleX = -11;
     public static double depotCycleY = -55;
     public static double depotCycleAng = 100;
 
     // Decrease to be closer to the hub
     public static double offsetMid = 2.5;
-    public static double offsetLow = 4;
+    public static double offsetLow = 3.5;
 
-    int cycles = 4;
+    int cycles = 3;
 
     State currentState = State.IDLE;
 
@@ -82,7 +82,7 @@ public class RedWarehouse extends LinearOpMode {
 
         double waitArm = 0.5;
         double waitOuttake = 0.01;
-        double waitIntake = 2;
+        double waitIntake = 2.25;
         double waitIntakeOut = 0.2;
         double waitLift = 0.75;
         ElapsedTime waitTimer = new ElapsedTime();
@@ -232,7 +232,7 @@ public class RedWarehouse extends LinearOpMode {
                         if (cycles > 1) {
                             currentState = State.WAREHOUSE_OUT;
 
-                            cycleX += 3;
+                            cycleX += 4;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -245,8 +245,10 @@ public class RedWarehouse extends LinearOpMode {
                                     //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
                                     .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
                                     //.lineToSplineHeading(new Pose2d(intakeCycleX + cycleX, warehouseInY, Math.toRadians(165)))
-                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY + 1), Math.toRadians(0))
+                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY), Math.toRadians(0))
                                     .build();
+
+
 
                             drive.followTrajectorySequenceAsync(warehouseOut);
 
@@ -281,7 +283,7 @@ public class RedWarehouse extends LinearOpMode {
                             currentState = State.IDLE;
 
                             manip.intakeStop();
-                            manip.gate(false);
+                            //manip.gate(false);
                         }
 
                     }

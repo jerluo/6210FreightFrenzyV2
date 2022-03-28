@@ -27,9 +27,9 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 2800;
-    public static int mid = 3360;
-    public static int low = 3747;
+    public static int high = 554;
+    public static int mid = 675;
+    public static int low = 739;
 
     // Capstone -1967
 
@@ -43,6 +43,11 @@ public class Manipulators {
 
     private Servo gate;
     private Servo cap;
+
+    //Tape measure
+    private CRServo turret;
+    private CRServo extend;
+    private CRServo vertical;
 
     ColorSensor color;
 
@@ -58,6 +63,10 @@ public class Manipulators {
         gate = robot.get(Servo.class, "gate");
         cap = robot.get(Servo.class, "cap");
 
+        // Tape measure servo
+        turret = robot.get(CRServo.class, "turret");
+        extend = robot.get(CRServo.class, "extend");
+        vertical = robot.get(CRServo.class, "vertical");
 
         // Lift
         RL = robot.get(DcMotor.class, "rightLift");
@@ -101,7 +110,7 @@ public class Manipulators {
         // Takes in encoder position to move lift to
         RL.setTargetPosition(tarPos);
         RL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        RL.setPower(1);
+        RL.setPower(0.7);
     }
 
     public void resetArm() {
@@ -224,7 +233,7 @@ public class Manipulators {
 
     public boolean senseColor(){
 
-        if (color.red() > 100 || color.green()  > 150) {
+        if (color.red() > 150 || color.green()  > 200) {
             return true;
         }
 

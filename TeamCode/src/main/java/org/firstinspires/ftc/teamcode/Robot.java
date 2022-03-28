@@ -33,6 +33,11 @@ public class Robot {
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
         BL.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         BNO055IMU.Parameters bparameters = new BNO055IMU.Parameters();
         bparameters.mode = BNO055IMU.SensorMode.IMU;
         bparameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;

@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
-@Autonomous(name = "Blue Warehouse", group = "blue")
-public class BlueWarehouse extends LinearOpMode {
+@Autonomous(name = "Blue Warehouse 3 CYCLE", group = "blue")
+public class BlueWarehouse3 extends LinearOpMode {
 
     enum State {
         ARM,
@@ -38,29 +38,28 @@ public class BlueWarehouse extends LinearOpMode {
     public static double depotAng = 270; // Degrees
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
-    public static double warehouseInX = 28;
+    public static double warehouseInX = 27;
     public static double warehouseInY = 74;
 
+
     // INTAKE TRAJECTORY
-    public static double intakeX = 45;
+    public static double intakeX = 46;
     public static double intakeY = 74;
     public static double intakeAngle = 0;
 
     // INTAKE TRAJECTORY
-    public static double intakeCycleX = 45;
+    public static double intakeCycleX = 46;
     public static double intakeCycleY = 68; // 67
-    public static double intakeCycleAngle = 350; // 345
+    public static double intakeCycleAngle = 345; // 345
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -10;
-    public static double depotCycleY = 56;
-    public static double depotCycleAng = 260;
+    public static double depotCycleX = -5;
+    public static double depotCycleY = 54;
+    public static double depotCycleAng = 250;
 
     // Decrease to be closer to the hub
     public static double offsetMid = 3;
-    public static double offsetLow = 4.5;
-
-    public static double waitServo = 2.1;
+    public static double offsetLow = 4;
 
     int cycles = 3;
 
@@ -75,24 +74,20 @@ public class BlueWarehouse extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
         Pose2d poseEstimate;
-        boolean stopTrajectory = false;
         double voltage = 100;
 
         double waitArm = 0.5;
         double waitOuttake = 0.2;
-        double waitIntake = 2.25;
-        double waitIntakeOut = 0.01;
-        double waitLift = 0.75;
+        double waitIntake = 2;
+        double waitIntakeOut = 0.5;
+        double waitLift = 1.5;
         ElapsedTime waitTimer = new ElapsedTime();
-        ElapsedTime matchTime = new ElapsedTime();
 
         manip.gate(false);
         telemetry.addLine("init done");
         telemetry.update();
 
         waitForStart();
-
-        matchTime.reset();
 
         // Do vision
         int pos = vuforia.blueWarehousePosition();
@@ -110,9 +105,10 @@ public class BlueWarehouse extends LinearOpMode {
         // Trajectory to warehouse
         TrajectorySequence warehouseIn = drive.trajectorySequenceBuilder(depot.end())
                 .setReversed(true)
-                //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
-                .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0))
+                .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(20, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
         // Trajectory to out of warehouse
@@ -133,7 +129,7 @@ public class BlueWarehouse extends LinearOpMode {
         manip.automaticLift(pos);
         waitTimer.reset();
 
-        double cycleX = 0;
+        double cycleX = 2;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -168,8 +164,8 @@ public class BlueWarehouse extends LinearOpMode {
                     }
 
                     if (!drive.isBusy()) {
-                        currentState = State.OUTTAKE;
                         manip.gate(true);
+                        currentState = State.OUTTAKE;
                         waitTimer.reset();
                     }
 
@@ -210,7 +206,6 @@ public class BlueWarehouse extends LinearOpMode {
                         // Check if freight inside the bucket -> stops intake
                         if (manip.senseColor()){
                             manip.intakeStop();
-                            stopTrajectory = true;
                             drive.followTrajectorySequence(null);
                         }
 
@@ -225,15 +220,29 @@ public class BlueWarehouse extends LinearOpMode {
                         waitTimer.reset();
                     }
 
-                    // || poseEstimate.getX() > depotCycleX + cycleX
-                    if (!drive.isBusy() || stopTrajectory) {
+                    // if getvoltage < voltage - 2
+                    // waittime reset
+                    // change state
+                    // outtake for .5
+                    // start intaking again
+                    // change state warehouse_in
 
-                        stopTrajectory = false;
+
+
+                    // If velocity slows, assume freight is inside intake, stop trajectory
+                    // if velocityIntake < velocity - 2
+                    // drive.followTrajectorySequence(null);
+                    // waitIntake += 0.5?
+
+
+
+
+                    if (!drive.isBusy()) {
 
                         // Continue
                         if (cycles > 1 ) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 4;
+                            cycleX += 1;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
@@ -243,10 +252,10 @@ public class BlueWarehouse extends LinearOpMode {
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
-                                    //.lineToSplineHeading(new Pose2d(intakeCycleX + cycleX, warehouseInY, Math.toRadians(165)))
-                                    .splineTo(new Vector2d(intakeX + cycleX, intakeY), Math.toRadians(0))
+                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
+                                    .splineTo(new Vector2d(intakeCycleX + cycleX, intakeCycleY), Math.toRadians(intakeCycleAngle),
+                                            SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                                     .build();
 
                             drive.followTrajectorySequenceAsync(warehouseOut);
@@ -256,7 +265,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                         }
 
-                        else if (cycles > 0 ) {
+                        else if (cycles > 0) {
                             currentState = State.WAREHOUSE_OUT;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
@@ -267,9 +276,8 @@ public class BlueWarehouse extends LinearOpMode {
 
                             warehouseIn = drive.trajectorySequenceBuilder(warehouseOut.end())
                                     .setReversed(true)
-                                    .splineToSplineHeading(new Pose2d(warehouseInX, warehouseInY, Math.toRadians(180)), Math.toRadians(0))
-                                    //.splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(0))
-                                    .splineTo(new Vector2d(intakeX, intakeY ), Math.toRadians(0))
+                                    .splineTo(new Vector2d(warehouseInX + cycleX, warehouseInY), Math.toRadians(0))
+                                    .splineTo(new Vector2d(intakeX, intakeY), Math.toRadians(0))
                                     .build();
 
                             drive.followTrajectorySequenceAsync(warehouseOut);
@@ -284,6 +292,7 @@ public class BlueWarehouse extends LinearOpMode {
                             currentState = State.IDLE;
 
                             manip.intakeStop();
+                            //manip.gate(false);
                         }
 
                     }
@@ -305,28 +314,22 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (poseEstimate.getX() < warehouseInX + 2.5) {
+                    if (waitTimer.seconds() >= waitLift) {
 
+                        manip.intakeStop();
                         manip.gate(false);
                         manip.automaticLift(3);
-                        manip.intakeStop();
 
                     }
 
-                    /*
-                    if (waitTimer.seconds() >= waitLift) {
+                    if (waitTimer.seconds() >= waitLift+1.5) {
 
-                        manip.gate(false);
-                        manip.automaticLift(3);
-                        manip.intakeStop();
+                        manip.gate(true);
 
-                    }*/
+                    }
 
-                    if (poseEstimate.getY() < depotCycleY + 2) manip.gate(true);
-
-                    if (!drive.isBusy() || poseEstimate.getY() < depotCycleY) {
+                    if (!drive.isBusy()) {
                         currentState = State.OUTTAKE;
-
 
                         waitTimer.reset();
                     }
@@ -368,7 +371,6 @@ public class BlueWarehouse extends LinearOpMode {
             telemetry.addData("voltage", manip.getVoltage());
             telemetry.addData("voltage check: ", voltage);
             telemetry.addData("velocity", manip.intakeVelocity());
-            telemetry.addData("match time", matchTime.seconds());
             telemetry.update();
         }
 
