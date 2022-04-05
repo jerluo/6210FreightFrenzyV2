@@ -40,10 +40,15 @@ public class BlueCarousel extends LinearOpMode {
     public static double depotY = 55; //before change this was 50
     public static double depotAng = 270; // Degrees
 
+    // DEPOT TRAJECTORY
+    public static double depotCycleX = -28;
+    public static double depotCycleY = 50; //before change this was 50
+    public static double depotCycleAng = 305; // Degrees
+
     // CAROUSEL TRAJECTORY
-    public static double carouselX = -65;
+    public static double carouselX = -64;
     public static double carouselY = 64;
-    public static double carouselAng = 305; // Degrees
+    public static double carouselAng = 315; // Degrees
 
     // INTAKE TRAJECTORY (FORWARD OUT OF CAROUSEL)
     public static double intakeX = -55;
@@ -56,23 +61,18 @@ public class BlueCarousel extends LinearOpMode {
     public static double intake2Ang = 315; // Degrees
 
     // INTAKE TRAJECTORY (BRING TOWARD CAROUSEL)
-    public static double intake3X = -54;
+    public static double intake3X = -56;
     public static double intake3Y = 68;
     public static double intake3Ang = 315; // Degrees
 
-    // WIGGLE ANGLES1 (PICK UP DUCK)
-    public static double wiggle1X = -64;
-    public static double wiggle1Y = 58;
-    public static double wiggle1Ang = 290; // Degrees
-
     public static double wiggle2X = -46;
-    public static double wiggle2Y = 68;
+    public static double wiggle2Y = 65.25;
     public static double wiggle2Ang = 270; // Degrees
 
     // PARK TRAJECTORY
     public static double parkX = -64;
     public static double parkY = 45;
-    public static double parkAng = 180; // Degrees
+    public static double parkAng = 360; // Degrees
 
     // Decrease to be closer to the hub
     public static double offsetMid = 3;
@@ -92,7 +92,7 @@ public class BlueCarousel extends LinearOpMode {
 
         drive.setPoseEstimate(startPose);
 
-        double waitOuttake = 0.5;
+        double waitOuttake = 1;
         double waitArm = 1;
         double waitIntake = 4;
         double waitCarousel = 3.5;
@@ -125,6 +125,10 @@ public class BlueCarousel extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(carouselX, carouselY, Math.toRadians(carouselAng)))
                 .build();
 
+        Trajectory carouselStatic = drive.trajectoryBuilder(carousel.end())
+                .lineToLinearHeading(new Pose2d(carouselX + 2, carouselY, Math.toRadians(carouselAng)))
+                .build();
+
         // Trajectory intaking duck
         TrajectorySequence intake = drive.trajectorySequenceBuilder(carousel.end())
                 .lineToLinearHeading(new Pose2d(intakeX, intakeY, Math.toRadians(intakeAng)))
@@ -143,7 +147,7 @@ public class BlueCarousel extends LinearOpMode {
 
         currentState = State.WAIT;
 
-        manip.automaticLift(pos);
+
         waitTimer.reset();
 
         while (opModeIsActive() && !isStopRequested()) {
@@ -157,6 +161,9 @@ public class BlueCarousel extends LinearOpMode {
                     }
 
                 case ARM:
+
+                    manip.automaticLift(pos);
+
                     if (waitTimer.seconds() >= waitArm) {
                         drive.followTrajectoryAsync(depot);
                         currentState = State.DEPOT;
@@ -168,6 +175,8 @@ public class BlueCarousel extends LinearOpMode {
                 // When arrived, move gates and outtake
 
                 case DEPOT:
+
+                    manip.automaticLift(pos);
 
                     if (!drive.isBusy()) {
                         currentState = State.OUTTAKE;
@@ -191,6 +200,7 @@ public class BlueCarousel extends LinearOpMode {
                         currentState = State.RETRACT;
 
                         manip.automaticLift(0);
+                        manip.gate(true);
 
                         if (cycles > 0){
                             currentState = State.CAROUSEL_TRAJECTORY;
@@ -201,7 +211,9 @@ public class BlueCarousel extends LinearOpMode {
                             waitArm = 0;
 
                             depot = drive.trajectoryBuilder(startPose)
-                                    .lineToLinearHeading(new Pose2d(depotX, depotY, Math.toRadians(depotAng)))
+                                    .lineToLinearHeading(new Pose2d(depotCycleX, depotCycleY, Math.toRadians(depotCycleAng)),
+                                            SampleMecanumDrive.getVelocityConstraint(20, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                                     .build();
                         }
                         else {
@@ -222,7 +234,8 @@ public class BlueCarousel extends LinearOpMode {
                         currentState = State.CAROUSEL;
 
                         manip.stopLift();
-                        manip.blueCarousel();
+                        manip.carousel(true, false);
+                        drive.followTrajectoryAsync(carouselStatic);
 
                         waitTimer.reset();
                     }
@@ -232,6 +245,10 @@ public class BlueCarousel extends LinearOpMode {
 
                     // Spin the carousel for <waitCarousel> seconds
                     // then stop and start intaking for duck
+
+                    if (waitTimer.seconds() >= waitCarousel - 3) {
+                        manip.carousel(true, true);
+                    }
 
                     if (waitTimer.seconds() >= waitCarousel) {
                         currentState = State.DUCK;
@@ -251,13 +268,14 @@ public class BlueCarousel extends LinearOpMode {
                     // and go back to depot
 
                     if (!drive.isBusy()) {
+
                         if (waitTimer.seconds() >= waitIntake) {
                             currentState = State.DEPOT;
                             drive.followTrajectoryAsync(depot);
 
                             manip.gate(false);
                             manip.intakeStop();
-                            manip.automaticLift(3);
+
                         }
 
                     }

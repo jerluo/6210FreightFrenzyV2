@@ -27,9 +27,9 @@ public class Manipulators {
     private int highest = 0;
 
     // Increase encoder values to move arm lower (further)
-    public static int high = 554;
-    public static int mid = 675;
-    public static int low = 739;
+    public static int high = 520;
+    public static int mid = 650;
+    public static int low = 715;
 
     // Capstone -1967
 
@@ -68,6 +68,7 @@ public class Manipulators {
         extend = robot.get(CRServo.class, "extend");
         vertical = robot.get(CRServo.class, "vertical");
 
+
         // Lift
         RL = robot.get(DcMotor.class, "rightLift");
 
@@ -94,8 +95,12 @@ public class Manipulators {
     // int pos : 0 - return/retract || 1 - low || 2 - mid || 3 - high
     public void automaticLift(int pos)
     {
+
         int tarPos = 0;
         int height = 0;
+        double gravity = 3;
+        double kP = 0.0025;
+        double gkP = 0.00001;
 
 
         if (pos == 0) height = 0;
@@ -108,9 +113,68 @@ public class Manipulators {
         tarPos = lowest + height;
 
         // Takes in encoder position to move lift to
-        RL.setTargetPosition(tarPos);
-        RL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        RL.setPower(0.7);
+
+        int error = tarPos - RL.getCurrentPosition();
+
+        //if (RL.getCurrentPosition() < 325)
+
+
+        if (Math.abs(error) < 20 ) {
+            RL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            double power = -0.005;
+            if (pos == 2) power = -0.002;
+            else if (pos == 3) power = -0.001;
+            manualLift(power);
+        }
+        else if (RL.getCurrentPosition() > 325 && error > 0)
+        {
+            RL.setTargetPosition(tarPos);
+            RL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            RL.setPower(0.25);
+            //manualLift(error * gkP);
+        }
+
+        else {
+            RL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            manualLift(error * kP);
+        }
+
+
+        //else RL.setPower((tarPos - RL.getCurrentPosition() * kP ) / gravity);
+
+    }
+
+    public void pivotTurret(double power) { turret.setPower(power);}
+
+    public void verticalTurret(double power) { vertical.setPower(power);}
+
+    public void extendTape(double power) { extend.setPower(power);}
+
+    // int pos : 0 - return/retract || 1 - low || 2 - mid || 3 - high
+    public int automaticLiftTest(int pos)
+    {
+
+        int tarPos = 0;
+        int height = 0;
+        double gravity = 3;
+
+
+        if (pos == 0) height = 0;
+
+        if (pos == 1) height = low;
+        if (pos == 2) height = mid;
+        if (pos == 3) height = high;
+
+
+        tarPos = lowest + height;
+
+        // Takes in encoder position to move lift to
+        RL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        int error = tarPos - RL.getCurrentPosition();
+        //if (RL.getCurrentPosition() < 325)
+        return error;
+        //else RL.setPower((tarPos - RL.getCurrentPosition() * kP ) / gravity);
+
     }
 
     public void resetArm() {
@@ -140,6 +204,18 @@ public class Manipulators {
     public void blueCarousel(){
         RC.setPower(0.6);
         LC.setPower(0.6);
+    }
+
+    public void carousel(boolean blue, boolean speed) {
+        double power = 0.6;
+        if (speed) {
+            power = 0.625;
+        }
+
+        if (!blue) power *= -1;
+
+        RC.setPower(power);
+        LC.setPower(power);
     }
 
     public void initialCarousel(double speed){
@@ -233,7 +309,7 @@ public class Manipulators {
 
     public boolean senseColor(){
 
-        if (color.red() > 150 || color.green()  > 200) {
+        if (color.red() > 100 || color.green()  > 150) {
             return true;
         }
 

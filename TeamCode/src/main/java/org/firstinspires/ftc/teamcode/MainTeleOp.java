@@ -14,6 +14,10 @@ import java.util.HashMap;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp", group = "TeleOp")
 public class MainTeleOp extends OpMode
 {
+
+
+
+
     Manipulators manip;
     Robot robot;
     DcMotor IT;
@@ -31,6 +35,7 @@ public class MainTeleOp extends OpMode
     double[] motorPower = {0, 0, 0, 0};
     double duckSpeed = 0.6;
     double capPos = 0;
+    int liftPos = 0;
     //int loopnum = 0;
 
     public void init()
@@ -113,8 +118,8 @@ public class MainTeleOp extends OpMode
 
         //manual lift
 
-        if (Math.abs(gamepad2.right_stick_y) > 0.1) {
-            manip.manualLift(-gamepad2.right_stick_y);
+        if (Math.abs(gamepad2.left_stick_y) > 0.1) {
+            manip.manualLift(-gamepad2.left_stick_y);
         }
         else if (manual)
         {
@@ -127,29 +132,34 @@ public class MainTeleOp extends OpMode
         if (isPressed("2y", gamepad2.y))
         {
             manual = false;
-            manip.automaticLift(3);
+            liftPos = 3;
         }
 
         //Lift Mid
         if (isPressed("2b", gamepad2.b))
         {
             manual = false;
-            manip.automaticLift(2);
+            liftPos = 2;
         }
 
         //Lift Low
         if (isPressed("2a", gamepad2.a))
         {
             manual = false;
-            manip.automaticLift(1);
+            liftPos = 1;
         }
 
 
         if (isPressed("2x", gamepad2.x))
         {
+            //manual = false;
+            liftPos = 0;
 
-            manip.automaticLift(0);
+        }
 
+        if (!manual) {
+            manip.automaticLift(liftPos);
+            telemetry.addLine("in manual");
         }
 
         if (retract) {
@@ -160,49 +170,6 @@ public class MainTeleOp extends OpMode
             }
         }
 
-        /*
-        retract = true;
-        waitTimer.reset();
-        manip.manualLift(-0.5);
-        if (retract) {
-            if (waitTimer.seconds() >= wait) manip.manualLift(0);
-            if (waitTimer.seconds() >= wait + 1) {
-                manip.resetArm();
-                retract = false;
-            }
-
-        }*/
-
-/*
-        //Changes direction of carousel
-        if (gamepad1.b)
-        {
-            duckDirection *= -1;
-        }
-*/
-  /*      //Blue Carousel
-        if (gamepad1.right_bumper)
-        {
-            manip.teleBlueCarousel(false);
-        }
-        //Red Carousel
-        else if (gamepad1.left_bumper)
-        {
-            manip.teleRedCarousel(false);
-        }
-        else if (gamepad1.right_trigger > .05)
-        {
-            manip.teleBlueCarousel(true);
-        }
-        else if (gamepad1.left_trigger > .05)
-        {
-            manip.teleRedCarousel(true);
-        }
-        else
-        {
-            manip.carouselStop();
-        }
-  */
         //sped duck macro
         if (gamepad1.right_bumper) {
             manip.initialCarousel(duckSpeed);
@@ -237,7 +204,10 @@ public class MainTeleOp extends OpMode
 
         //Gate
 
-        if (isPressed("lBumper", gamepad2.left_bumper)) manip.gate(true);
+        if (isPressed("lBumper", gamepad2.left_bumper)) {
+            if (manip.liftEncoder() < 600) manip.gatePos(3);
+            else manip.gatePos(2);
+        }
 
         if (isPressed("rBumper", gamepad2.right_bumper)) manip.gate(false);
 
@@ -247,19 +217,6 @@ public class MainTeleOp extends OpMode
             manip.setCap(capPos);
         }
 
-        if (isPressed("dpaddown", gamepad2.dpad_down)) {
-            if (capPos > 0) capPos -= 0.05;
-            manip.setCap(capPos);
-        }
-
-        if (isPressed("dpadleft", gamepad2.dpad_left)) {
-            capPos = 1;
-            manip.setCap(capPos);
-        }
-        if (isPressed("dpadright", gamepad2.dpad_right)) {
-            capPos = 0;
-            manip.setCap(capPos);
-        }
 
 
         //Changes to outtake
@@ -304,7 +261,7 @@ public class MainTeleOp extends OpMode
 
 
         // Switch back to manual lift
-        if (Math.abs(gamepad2.right_stick_y) > 0.1) manual = true;
+        if (Math.abs(gamepad2.left_stick_y) > 0.1) manual = true;
 
 
 
@@ -315,6 +272,33 @@ public class MainTeleOp extends OpMode
         else{
             gamepad2.stopRumble();
             gamepad1.stopRumble();
+        }
+
+        if (Math.abs(gamepad2.right_stick_x) > 0.04) {
+            double power = 0.09;
+            if (gamepad2.right_stick_x < 0) power = -0.14;
+            manip.pivotTurret(power);
+        }
+        else {
+            manip.pivotTurret(0);
+        }
+
+        if (Math.abs(gamepad2.right_stick_y) > 0.1) {
+            manip.verticalTurret(gamepad2.right_stick_y * .15);
+        } else {
+            manip.verticalTurret(0);
+        }
+
+        if (gamepad2.dpad_up) {
+            manip.extendTape(-0.3);
+        }
+
+        else if (gamepad2.dpad_down) {
+            manip.extendTape(0.3);
+        }
+
+        else {
+            manip.extendTape(0);
         }
 
         /*if (manip.getVoltage() < voltage - 2) {
@@ -340,7 +324,12 @@ public class MainTeleOp extends OpMode
         telemetry.addData("field", field);
         telemetry.addData("encoder", manip.RL.getCurrentPosition());
         telemetry.addData("duckspeed", duckSpeed);
-        //telemetry.addData("loopy", loopnum);
+        telemetry.addData("liftPos", liftPos);
+        telemetry.addData("down", gamepad2.dpad_down);
+        telemetry.addData("up", gamepad2.dpad_up);
+        telemetry.addData("y", gamepad2.left_stick_y);
+        telemetry.addData("x", gamepad2.left_stick_x);
+
         telemetry.update();
 
     }

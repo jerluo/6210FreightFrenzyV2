@@ -39,11 +39,11 @@ public class BlueWarehouse extends LinearOpMode {
 
     // WAREHOUSE INSIDE TRAJECTORY (should be right on barrier entrance or exit won't work)
     public static double warehouseInX = 28;
-    public static double warehouseInY = 74;
+    public static double warehouseInY = 75;
 
     // INTAKE TRAJECTORY
-    public static double intakeX = 45;
-    public static double intakeY = 74;
+    public static double intakeX = 43;
+    public static double intakeY = 75;
     public static double intakeAngle = 0;
 
     // INTAKE TRAJECTORY
@@ -52,17 +52,17 @@ public class BlueWarehouse extends LinearOpMode {
     public static double intakeCycleAngle = 350; // 345
 
     // DEPOT CYCLE TRAJECTORY
-    public static double depotCycleX = -10;
-    public static double depotCycleY = 56;
-    public static double depotCycleAng = 260;
+    public static double depotCycleX = -5;
+    public static double depotCycleY = 54.5;
+    public static double depotCycleAng = 250;
 
     // Decrease to be closer to the hub
-    public static double offsetMid = 3;
+    public static double offsetMid = 3.5;
     public static double offsetLow = 4.5;
 
     public static double waitServo = 2.1;
 
-    int cycles = 3;
+    int cycles = 4;
 
     State currentState = State.IDLE;
 
@@ -78,9 +78,9 @@ public class BlueWarehouse extends LinearOpMode {
         boolean stopTrajectory = false;
         double voltage = 100;
 
-        double waitArm = 0.5;
+        double waitArm = 0.4;
         double waitOuttake = 0.2;
-        double waitIntake = 2.25;
+        double waitIntake = 1.75;
         double waitIntakeOut = 0.01;
         double waitLift = 0.75;
         ElapsedTime waitTimer = new ElapsedTime();
@@ -130,7 +130,6 @@ public class BlueWarehouse extends LinearOpMode {
 
         currentState = State.ARM;
 
-        manip.automaticLift(pos);
         waitTimer.reset();
 
         double cycleX = 0;
@@ -142,6 +141,9 @@ public class BlueWarehouse extends LinearOpMode {
             switch (currentState) {
 
                 case ARM:
+
+                    manip.automaticLift(pos);
+
                     if (waitTimer.seconds() >= waitArm) {
 
                         drive.followTrajectoryAsync(depot);
@@ -167,7 +169,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy() || poseEstimate.getY() < depotY + 1) {
                         currentState = State.OUTTAKE;
                         manip.gate(true);
                         waitTimer.reset();
@@ -181,14 +183,13 @@ public class BlueWarehouse extends LinearOpMode {
                     // Then stop intake and retract
                     // Go into warehouse trajectory
 
+                    // waitTimer.seconds() >= waitOuttake
                     if (waitTimer.seconds() >= waitOuttake) {
                         currentState = State.WAREHOUSE_IN;
 
                         voltage = manip.getVoltage();
 
                         pos = 3;
-
-                        manip.automaticLift(0);
 
                         drive.followTrajectorySequenceAsync(warehouseIn);
 
@@ -203,12 +204,13 @@ public class BlueWarehouse extends LinearOpMode {
                     // Then go to next trajectory and stop intake
                     // Decide whether to continue doing cycles or go to idle
 
+                    manip.automaticLift(0);
 
                     if (waitTimer.seconds() >= waitIntake) {
 
                         manip.intake(false);
                         // Check if freight inside the bucket -> stops intake
-                        if (manip.senseColor()){
+                        if (manip.senseColor() && poseEstimate.getX() > warehouseInX){
                             manip.intakeStop();
                             stopTrajectory = true;
                             drive.followTrajectorySequence(null);
@@ -231,13 +233,13 @@ public class BlueWarehouse extends LinearOpMode {
                         stopTrajectory = false;
 
                         // Continue
-                        if (cycles > 1 ) {
+                        if (cycles > 1 && matchTime.seconds() > 4) {
                             currentState = State.WAREHOUSE_OUT;
-                            cycleX += 4;
+                            cycleX += 3.5;
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
+                                    .splineToConstantHeading(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
                                     .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
                                     .build();
 
@@ -261,7 +263,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                             warehouseOut = drive.trajectorySequenceBuilder(poseEstimate)
                                     .setReversed(false)
-                                    .splineTo(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
+                                    .splineToConstantHeading(new Vector2d(warehouseInX, warehouseInY), Math.toRadians(180))
                                     .splineTo(new Vector2d(depotCycleX, depotCycleY), Math.toRadians(depotCycleAng))
                                     .build();
 
@@ -305,7 +307,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     }
 
-                    if (poseEstimate.getX() < warehouseInX + 2.5) {
+                    if (poseEstimate.getX() < warehouseInX - 6) {
 
                         manip.gate(false);
                         manip.automaticLift(3);
@@ -324,7 +326,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (poseEstimate.getY() < depotCycleY + 2) manip.gate(true);
 
-                    if (!drive.isBusy() || poseEstimate.getY() < depotCycleY) {
+                    if (!drive.isBusy() || poseEstimate.getY() < depotCycleY + 1) {
                         currentState = State.OUTTAKE;
 
 

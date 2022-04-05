@@ -126,7 +126,7 @@ public class BlueWarehouse3 extends LinearOpMode {
 
         currentState = State.ARM;
 
-        manip.automaticLift(pos);
+
         waitTimer.reset();
 
         double cycleX = 2;
@@ -138,6 +138,9 @@ public class BlueWarehouse3 extends LinearOpMode {
             switch (currentState) {
 
                 case ARM:
+
+                    manip.automaticLift(pos);
+
                     if (waitTimer.seconds() >= waitArm) {
 
                         drive.followTrajectoryAsync(depot);
@@ -184,7 +187,7 @@ public class BlueWarehouse3 extends LinearOpMode {
 
                         pos = 3;
 
-                        manip.automaticLift(0);
+
 
                         drive.followTrajectorySequenceAsync(warehouseIn);
 
@@ -199,6 +202,7 @@ public class BlueWarehouse3 extends LinearOpMode {
                     // Then go to next trajectory and stop intake
                     // Decide whether to continue doing cycles or go to idle
 
+                    manip.automaticLift(0);
 
                     if (waitTimer.seconds() >= waitIntake) {
 
