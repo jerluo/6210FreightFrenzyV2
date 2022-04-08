@@ -138,7 +138,7 @@ public class RedCloseAuto extends LinearOpMode {
                     // When reached, outtake block
                     if (waitTimer.seconds() >= waitTime4) {
                         currentState = State.OUTTAKE;
-                        manip.intake(true);
+                        manip.intake(true, 1);
                         waitTimer.reset();
                     }
                     break;

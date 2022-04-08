@@ -208,7 +208,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitIntake) {
 
-                        manip.intake(false);
+                        manip.intake(false, 1);
                         // Check if freight inside the bucket -> stops intake
                         if (manip.senseColor() && poseEstimate.getX() > warehouseInX){
                             manip.intakeStop();
@@ -303,7 +303,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                     if (waitTimer.seconds() >= waitIntakeOut) {
 
-                        manip.intake(true);
+                        manip.intake(true, 1);
 
                     }
 
@@ -339,10 +339,10 @@ public class BlueWarehouse extends LinearOpMode {
                     // Outtake for 0.5 seconds then start intaking
                     // Go back to warehouse in trajectory
                     // Should still be following trajectory as this occurs
-                    manip.intake(true);
+                    manip.intake(true, 1);
 
                     if (waitTimer.seconds() > 0.25) {
-                        manip.intake(false);
+                        manip.intake(false, 1);
                         currentState = State.WAREHOUSE_IN;
                     }
 

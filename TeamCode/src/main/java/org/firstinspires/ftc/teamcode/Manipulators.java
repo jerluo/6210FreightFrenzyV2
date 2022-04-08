@@ -320,4 +320,19 @@ public class Manipulators {
         return (color.red());
     }
 
+    public void pivotTurret(double power) {
+
+        turret.setPower(power);
+    }
+
+    public void verticalTurret(double power) {
+
+        vertical.setPower(power);
+    }
+
+    public void extendTape(double power) {
+
+        extend.setPower(power);
+    }
+
 }

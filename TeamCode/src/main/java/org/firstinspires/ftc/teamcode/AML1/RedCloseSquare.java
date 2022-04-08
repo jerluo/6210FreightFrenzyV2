@@ -119,7 +119,7 @@ public class RedCloseSquare extends LinearOpMode {
                         waitTimer.reset();
 
                         manip.manualLift(0);
-                        manip.intake(true);
+                        manip.intake(true, 1);
                     }
                     break;
                 case OUTTAKE:
